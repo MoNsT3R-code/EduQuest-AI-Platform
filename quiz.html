@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduQuest AI — Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="navbar">
+        <div class="navbar-brand">🎮 EduQuest AI</div>
+        <div class="navbar-right">
+            <span class="navbar-student">👤 {{ student.name }} · Grade {{ student.grade }}</span>
+            <a href="/quiz" class="nav-quiz-btn">📝 New Quiz</a>
+            <a href="/logout" class="logout-btn">🚪 Logout</a>
+        </div>
+    </div>
+
+    <div class="hero dashboard-hero">
+        <div class="hero-badge">📊 Your Dashboard</div>
+        <h1>Welcome back, <span>{{ student.name }}!</span></h1>
+        <p>Here's your AI-powered performance report</p>
+        <div class="hero-chars">
+            <span class="hero-char-left">🎮</span>
+            <span class="hero-char-right">🏆</span>
+        </div>
+    </div>
+
+    <div class="container dashboard-container">
+
+        {% if result %}
+
+        <!-- Result Card -->
+        <div class="card result-card {{ result.level }}">
+            <div class="result-emoji">
+                {% if result.level == 'high' %}🌟
+                {% elif result.level == 'medium' %}⭐
+                {% else %}✨{% endif %}
+            </div>
+            <div class="result-info">
+                <div class="result-label">{{ result.label }} Performer</div>
+                <div class="result-sub">
+                    📚 {{ result.subject }} ·
+                    AI Confidence: {{ result.confidence }}%
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-value">{{ result.points }}</div>
+                <div class="stat-label">XP This Round</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon">🏅</div>
+                <div class="stat-value">{{ total_xp }}</div>
+                <div class="stat-label">Total XP</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-value">{{ result.streak_days }}</div>
+                <div class="stat-label">Streak Days</div>
+            </div>
+        </div>
+
+        <!-- XP Progress -->
+        <div class="card">
+            <div class="card-title">📈 XP Progress</div>
+            <div class="xp-bar-bg">
+                <div class="xp-bar-fill" style="width: {{ result.points }}%"></div>
+            </div>
+            <div class="xp-caption">
+                {{ result.points }} / 100 XP this round ·
+                {{ total_xp }} XP total
+            </div>
+        </div>
+
+        <!-- Badge -->
+        <div class="card badge-card">
+            <div class="card-title">🎖️ Badge Earned</div>
+            <div class="badge-icon">
+                {% if result.level == 'high' %}🏆
+                {% elif result.level == 'medium' %}🥈
+                {% else %}🥉{% endif %}
+            </div>
+            <div class="badge-title">{{ result.badge }}</div>
+            <div class="badge-desc">{{ result.badge_desc }}</div>
+        </div>
+
+        <!-- AI Recommendation -->
+        <div class="card">
+            <div class="card-title">💡 AI Recommendation</div>
+            <div class="rec-box">{{ result.rec }}</div>
+        </div>
+
+        <!-- Session Summary -->
+        <div class="card">
+            <div class="card-title">📊 This Session Summary</div>
+            <div class="summary-grid">
+                <div class="summary-item">📝 Quiz Score <span>{{ result.quiz_score }}%</span></div>
+                <div class="summary-item">✅ Assignments <span>{{ result.assignments }}%</span></div>
+                <div class="summary-item">⏱️ Study Time <span>{{ result.time_spent }} hrs</span></div>
+                <div class="summary-item">🔥 Streak <span>{{ result.streak_days }} days</span></div>
+                <div class="summary-item">🔁 Attempts <span>{{ result.attempts }}</span></div>
+                <div class="summary-item">💡 Hints Used <span>{{ result.hints_used }}</span></div>
+                <div class="summary-item">📚 Subject <span>{{ result.subject }}</span></div>
+                <div class="summary-item">🎓 Grade <span>Grade {{ student.grade }}</span></div>
+            </div>
+        </div>
+
+        {% endif %}
+
+        <!-- Subject Progress -->
+        <div class="card">
+            <div class="card-title">📚 Subject Progress</div>
+            <div class="subject-btn-row">
+                <button class="subject-btn active" onclick="showSubject('Mathematics', this)">
+                    📐 Mathematics
+                </button>
+                <button class="subject-btn" onclick="showSubject('English', this)">
+                    📖 English
+                </button>
+                <button class="subject-btn" onclick="showSubject('ComputerScience', this)">
+                    💻 Computer Science
+                </button>
+            </div>
+
+            <!-- Mathematics Panel -->
+            <div id="panel-Mathematics" class="subject-panel">
+                {% set math_records = history | selectattr('subject', 'equalto', 'Mathematics') | list %}
+                {% if math_records %}
+                {% set avg_quiz = (math_records | map(attribute='quiz_score') | list | sum / math_records | length) |
+                round(1) %}
+                {% set avg_assign = (math_records | map(attribute='assignments') | list | sum / math_records | length) |
+                round(1) %}
+                {% set avg_streak = (math_records | map(attribute='streak_days') | list | sum / math_records | length) |
+                round(1) %}
+                {% set latest = math_records[0] %}
+                <div class="progress-section">
+                    <div class="progress-label">
+                        <span>📝 Quiz Score (avg)</span>
+                        <span>{{ avg_quiz }}%</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div class="progress-fill quiz-fill" style="width: {{ avg_quiz }}%"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span>✅ Assignments (avg)</span>
+                        <span>{{ avg_assign }}%</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div class="progress-fill assign-fill" style="width: {{ avg_assign }}%"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span>🔥 Streak Days (avg)</span>
+                        <span>{{ avg_streak }} days</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div class="progress-fill streak-fill" style="width: {{ (avg_streak / 30 * 100) | int }}%">
+                        </div>
+                    </div>
+                    <div class="subject-prediction pred-{{ latest.prediction | lower }}">
+                        Latest: {{ latest.prediction }} · ⚡ {{ latest.points }} XP · {{ math_records | length }}
+                        attempt(s)
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-data">No Mathematics attempts yet. Take a quiz!</div>
+                {% endif %}
+            </div>
+
+            <!-- English Panel -->
+            <div id="panel-English" class="subject-panel" style="display:none">
+                {% set eng_records = history | selectattr('subject', 'equalto', 'English') | list %}
+                {% if eng_records %}
+                {% set avg_quiz = (eng_records | map(attribute='quiz_score') | list | sum / eng_records | length) |
+                round(1) %}
+                {% set avg_assign = (eng_records | map(attribute='assignments') | list | sum / eng_records | length) |
+                round(1) %}
+                {% set avg_streak = (eng_records | map(attribute='streak_days') | list | sum / eng_records | length) |
+                round(1) %}
+                {% set latest = eng_records[0] %}
+                <div class="progress-section">
+                    <div class="progress-label">
+                        <span>📝 Quiz Score (avg)</span>
+                        <span>{{ avg_quiz }}%</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div class="progress-fill quiz-fill" style="width: {{ avg_quiz }}%"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span>✅ Assignments (avg)</span>
+                        <span>{{ avg_assign }}%</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div class="progress-fill assign-fill" style="width: {{ avg_assign }}%"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span>🔥 Streak Days (avg)</span>
+                        <span>{{ avg_streak }} days</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div class="progress-fill streak-fill" style="width: {{ (avg_streak / 30 * 100) | int }}%">
+                        </div>
+                    </div>
+                    <div class="subject-prediction pred-{{ latest.prediction | lower }}">
+                        Latest: {{ latest.prediction }} · ⚡ {{ latest.points }} XP · {{ eng_records | length }}
+                        attempt(s)
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-data">No English attempts yet. Take a quiz!</div>
+                {% endif %}
+            </div>
+
+            <!-- Computer Science Panel -->
+            <div id="panel-ComputerScience" class="subject-panel" style="display:none">
+                {% set cs_records = history | selectattr('subject', 'equalto', 'Computer Science') | list %}
+                {% if cs_records %}
+                {% set avg_quiz = (cs_records | map(attribute='quiz_score') | list | sum / cs_records | length) |
+                round(1) %}
+                {% set avg_assign = (cs_records | map(attribute='assignments') | list | sum / cs_records | length) |
+                round(1) %}
+                {% set avg_streak = (cs_records | map(attribute='streak_days') | list | sum / cs_records | length) |
+                round(1) %}
+                {% set latest = cs_records[0] %}
+                <div class="progress-section">
+                    <div class="progress-label">
+                        <span>📝 Quiz Score (avg)</span>
+                        <span>{{ avg_quiz }}%</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div class="progress-fill quiz-fill" style="width: {{ avg_quiz }}%"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span>✅ Assignments (avg)</span>
+                        <span>{{ avg_assign }}%</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div class="progress-fill assign-fill" style="width: {{ avg_assign }}%"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span>🔥 Streak Days (avg)</span>
+                        <span>{{ avg_streak }} days</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div class="progress-fill streak-fill" style="width: {{ (avg_streak / 30 * 100) | int }}%">
+                        </div>
+                    </div>
+                    <div class="subject-prediction pred-{{ latest.prediction | lower }}">
+                        Latest: {{ latest.prediction }} · ⚡ {{ latest.points }} XP · {{ cs_records | length }}
+                        attempt(s)
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-data">No Computer Science attempts yet. Take a quiz!</div>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <!-- Performance History -->
+        {% if history %}
+        <div class="card">
+            <div class="card-title">📜 Performance History</div>
+            <div class="history-table-wrap">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Subject</th>
+                            <th>Quiz</th>
+                            <th>Assignments</th>
+                            <th>Streak</th>
+                            <th>Prediction</th>
+                            <th>XP</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in history %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ row.subject }}</td>
+                            <td>{{ row.quiz_score }}%</td>
+                            <td>{{ row.assignments }}%</td>
+                            <td>{{ row.streak_days }} days</td>
+                            <td>
+                                <span class="pred-badge pred-{{ row.prediction | lower }}">
+                                    {{ row.prediction }}
+                                </span>
+                            </td>
+                            <td>⚡ {{ row.points }}</td>
+                            <td>{{ row.timestamp[:10] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="action-row">
+            <a href="/quiz" class="action-btn primary">📝 Take Another Quiz</a>
+            <a href="/logout" class="action-btn secondary">🚪 Logout</a>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>🎓 EduQuest AI · Student Performance Predictor · Grades 3–7</p>
+    </footer>
+
+    <script>
+        function showSubject(subject, btn) {
+            document.querySelectorAll('.subject-panel').forEach(p => p.style.display = 'none');
+            document.querySelectorAll('.subject-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('panel-' + subject).style.display = 'block';
+            btn.classList.add('active');
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduQuest AI — Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="login-body">
+
+    <div class="login-split">
+
+        <!-- LEFT SIDE — Branding -->
+        <div class="login-left">
+            <div class="login-brand">
+                <div class="login-logo">🎮</div>
+                <h1>EduQuest <span>AI</span></h1>
+                <p>Your personalized AI learning companion for Grades 3–7</p>
+            </div>
+
+            <div class="login-features">
+                <div class="login-feature">
+                    <div class="lf-icon">🤖</div>
+                    <div class="lf-text">
+                        <div class="lf-title">AI Prediction</div>
+                        <div class="lf-desc">Smart performance analysis</div>
+                    </div>
+                </div>
+                <div class="login-feature">
+                    <div class="lf-icon">🏆</div>
+                    <div class="lf-text">
+                        <div class="lf-title">Earn Badges</div>
+                        <div class="lf-desc">Rewards for every effort</div>
+                    </div>
+                </div>
+                <div class="login-feature">
+                    <div class="lf-icon">📊</div>
+                    <div class="lf-text">
+                        <div class="lf-title">Track Progress</div>
+                        <div class="lf-desc">See your growth over time</div>
+                    </div>
+                </div>
+                <div class="login-feature">
+                    <div class="lf-icon">🔥</div>
+                    <div class="lf-text">
+                        <div class="lf-title">Daily Streaks</div>
+                        <div class="lf-desc">Stay consistent every day</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="login-subjects">
+                <span>📐 Math</span>
+                <span>📖 English</span>
+                <span>💻 CS</span>
+            </div>
+        </div>
+
+        <!-- RIGHT SIDE — Form -->
+        <div class="login-right">
+            <div class="login-form-card">
+
+                <div class="login-form-header">
+                    <div class="login-form-icon">🎓</div>
+                    <h2>Welcome, Student!</h2>
+                    <p>Enter your details to begin</p>
+                </div>
+
+                {% if error %}
+                <div class="error-box">⚠️ {{ error }}</div>
+                {% endif %}
+
+                <form method="POST">
+                    <div class="input-group-login">
+                        <label>👤 Your Name</label>
+                        <input type="text" name="name" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="input-group-login">
+                        <label>🎓 Your Grade</label>
+                        <select name="grade">
+                            <option value="3">Grade 3</option>
+                            <option value="4">Grade 4</option>
+                            <option value="5" selected>Grade 5</option>
+                            <option value="6">Grade 6</option>
+                            <option value="7">Grade 7</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="predict-btn">
+                        🚀 Start Learning!
+                    </button>
+                </form>
+
+                <div class="login-footer-note">
+                    🔒 Your data is safe and anonymized
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
