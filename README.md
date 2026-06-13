@@ -1,6 +1,11 @@
 # EduQuest AI: AI-Powered Gamified Learning Platform
 
-An AI-powered gamified learning platform for grades 3–7 that uses Random Forest classification to predict student performance from behavioral telemetry data. Automatically adapts curriculum difficulty and gamified reward tiers in real-time to optimize personalized early childhood education.
+- ![Python 3.8+](https://img.shields.io/badge/Python-3.8+-blue?logo=python)
+- ![scikit--learn](https://img.shields.io/badge/scikit--learn-Latest-orange)
+- ![Streamlit](https://img.shields.io/badge/Streamlit-App-red?logo=streamlit)
+- ![Random Forest](https://img.shields.io/badge/ML%20Model-Random%20Forest-brightgreen)
+- ![Accuracy](https://img.shields.io/badge/Accuracy-72.5%25-brightgreen)
+- ![License: MIT](https://img.shields.io/badge/License-MIT-yellow)
 
 ---
 
@@ -42,6 +47,8 @@ The composite score (S) determines the student's operational tier:
 * **Medium Performance:** 51 <= S <= 65 (Triggers standard adaptive pacing)
 * **Low Performance:** S <= 50 (Triggers foundational support alerts)
 
+
+
 ---
 
 ## Machine Learning Pipeline
@@ -73,11 +80,33 @@ EduQuest AI uses the model's live profile inferences to dynamically adjust the p
 * **Silver Star Badge (Medium Tier):** Focuses on consistency loops, offering streak multiplier bonuses and targeted mini-milestones to motivate progression to the upper tier.
 * **Bronze Beginner Badge (Low Tier):** Framed entirely as a supportive launchpad. The UI removes countdown timers, scales down cognitive load, and provides animated walkthroughs that reward effort and consistency over high scores.
 
+## 🎯 Quick Links
+- 📊 [View Model Performance](#model-evaluation-metrics)
+- 🚀 [Get Started in 3 Steps](#technical-implementation-and-setup)
+- 📖 [Read Full Documentation](#project-overview-and-vision)
+
+
 ---
+
+## 🛠️ Tech Stack
+- **ML Framework:** scikit-learn
+- **Dashboard:** Streamlit
+- **Language:** Python 3.8+
+- **Data Processing:** Pandas, NumPy
+- **Visualization:** Matplotlib, Seaborn
+An AI-powered gamified learning platform for grades 3–7 that uses Random Forest classification to predict student performance from behavioral telemetry data. Automatically adapts curriculum difficulty and gamified reward tiers in real-time to optimize personalized early childhood education.
 
 ## Technical Implementation and Setup
 
 This platform features an interactive user dashboard built using Streamlit for live telemetry adjustments and real-time model inferences.
+
+## ⚡ Features at a Glance
+✅ Real-time student performance prediction (72.5% accuracy)
+✅ AI-powered adaptive learning pathways
+✅ Gamified reward system with 3 tiers
+✅ Interactive Streamlit dashboard
+✅ 200+ synthetic student behavioral dataset
+✅ Random Forest ensemble learning
 
 ### Prerequisites
 Make sure you have Python 3.8+ installed on your local machine.
@@ -91,13 +120,21 @@ Make sure you have Python 3.8+ installed on your local machine.
 
 ```Bash
 pip install pandas numpy scikit-learn streamlit matplotlib seaborn
-
+```
 3. **Train and Run the Model Engine:**
 
 ```Bash
 python eduquest_engine.py
-
+```
 4. **Launch the Dashboard Web App:**
+
+## 📊 Performance Metrics
+| Metric | Score |
+|--------|-------|
+| Overall Accuracy | 72.50% |
+| High Performance | 0.84 F1 |
+| Medium Performance | 0.65 F1 |
+| Low Performance | 0.73 F1 |
 
 ``` Bash
 streamlit run app.py
