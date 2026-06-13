@@ -5,7 +5,13 @@
 - ![Streamlit](https://img.shields.io/badge/Streamlit-App-red?logo=streamlit)
 - ![Random Forest](https://img.shields.io/badge/ML%20Model-Random%20Forest-brightgreen)
 - ![Accuracy](https://img.shields.io/badge/Accuracy-72.5%25-brightgreen)
-- ![License: MIT](https://img.shields.io/badge/License-MIT-yellow)
+- ![License: MIT](https://img.shields.io/badge/License-FCCU-yellow)
+
+## 🎯 Quick Links
+- 📊 [View Model Performance](#model-evaluation-metrics)
+- 🚀 [Get Started in 3 Steps](#technical-implementation-and-setup)
+- 📖 [Read Full Documentation](#project-overview-and-vision)
+
 
 ---
 
@@ -79,12 +85,6 @@ EduQuest AI uses the model's live profile inferences to dynamically adjust the p
 * **Gold Scholar Badge (High Tier):** Automatically scales up challenge levels, unlocking complex critical-thinking puzzles and peer-mentorship leaderboard tracking.
 * **Silver Star Badge (Medium Tier):** Focuses on consistency loops, offering streak multiplier bonuses and targeted mini-milestones to motivate progression to the upper tier.
 * **Bronze Beginner Badge (Low Tier):** Framed entirely as a supportive launchpad. The UI removes countdown timers, scales down cognitive load, and provides animated walkthroughs that reward effort and consistency over high scores.
-
-## 🎯 Quick Links
-- 📊 [View Model Performance](#model-evaluation-metrics)
-- 🚀 [Get Started in 3 Steps](#technical-implementation-and-setup)
-- 📖 [Read Full Documentation](#project-overview-and-vision)
-
 
 ---
 
