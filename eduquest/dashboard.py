@@ -75,8 +75,10 @@ def export():
     db, sid = get_db(), g.student["id"]
     rows = lambda sql: [dict(r) for r in db.execute(sql, (sid,))]
     data = {
-        "student": {k: g.student[k] for k in ("name", "grade", "created_at", "last_seen_at")},
-        "quests": rows("SELECT id, subject, mode, started_at, finished_at, abandoned, score, hints_used, duration_s, xp FROM quests WHERE student_id = ?"),
+        "student": {k: g.student[k] for k in ("name", "grade", "buddy", "coins", "created_at", "last_seen_at")},
+        "quests": rows("""SELECT id, subject, mode, daily, started_at, finished_at, abandoned, score, hints_used,
+                          duration_s, xp, coins, best_combo, boss_defeated FROM quests WHERE student_id = ?"""),
+        "inventory": rows("SELECT item, equipped, bought_at FROM inventory WHERE student_id = ?"),
         "answers": rows("""SELECT qi.quest_id, qi.position, qi.skill, qi.difficulty, qi.prompt, qi.tries, qi.hints_used, qi.correct
                            FROM quest_items qi JOIN quests q ON q.id = qi.quest_id WHERE q.student_id = ?"""),
         "predictions": rows("""SELECT p.quest_id, p.label, p.confidence, p.formula_score, p.model_version, p.features_json

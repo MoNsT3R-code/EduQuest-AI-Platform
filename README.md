@@ -36,7 +36,12 @@ EduQuest AI treats what a student actually does in the app as behavioral telemet
 - ✅ **Adaptive difficulty**: an Elo-style rating per subject picks each next question
 - ✅ **Three tiers that change the game**: Launchpad (Bronze), Steady (Silver) and Challenge (Gold)
 - ✅ **Explainable results**: what counted toward the tier, the shortest path to the next one, and what the AI noticed
-- ✅ **XP, levels, streaks and 8 badges**, with extra reward for effort at the lowest tier
+- ✅ **XP, levels, streaks and 12 badges**, with extra reward for effort at the lowest tier
+- ✅ **Animated buddies**: pick Robo the robot, Hoot the owl or Blaze the dragon. They blink, bob, cheer, sulk, think and dance, talk in speech bubbles, and grow an aura (level 3) and sparkles (level 6)
+- ✅ **Boss battles**: every quest is a fight against the Number Golem, the Grammar Gremlin or the Bug Beast. Right answers are attacks that knock off one of five hearts; get all five for a KO
+- ✅ **Combos, coins and a buddy shop**: answers right in a row build a combo, and coins (3 per answer, 10 per boss) buy hats, shades, a cape or a jetpack in four gear slots
+- ✅ **Daily challenge and adventure map**: one subject a day pays double coins and +25 XP, and each subject has a 10-stop map with a boss castle
+- ✅ **8-bit sound effects** synthesised in the browser (with a remembered mute button) and drifting clouds; all motion respects reduced-motion settings
 - ✅ **Kid-friendly sign-in** with a picture password, plus download-my-data and delete-my-account controls
 - ✅ **Accessible**: works without JavaScript, keyboard play (1–4, then Enter), read-aloud questions, reduced-motion support
 

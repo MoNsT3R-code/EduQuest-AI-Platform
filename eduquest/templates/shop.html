@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% from "_characters.html" import buddy_svg %}
+{% block title %}Buddy shop{% endblock %}
+{% block sound %}{{ "coin" if message == "bought" else "" }}{% endblock %}
+{% block content %}
+<div class="container">
+  <section class="shop-head" id="buddy-preview">
+    <div class="shop-buddy">
+      {{ buddy_svg(buddy.code, buddy.gear, "dance" if message == "bought" else "wave", buddy.stage, cls="buddy-lg", label=buddy.name ~ " wearing their gear") }}
+    </div>
+    <div>
+      <p class="eyebrow-pixel">Buddy shop</p>
+      <h1>Dress up {{ buddy.name }}</h1>
+      <p class="wallet"><span class="coin coin-lg" aria-hidden="true"></span><strong class="tabular">{{ coins }}</strong> coins</p>
+      {% if message == "bought" %}<p class="notice notice-ok" role="status">New gear! {{ buddy.name }} loves it.</p>
+      {% elif message == "poor" %}<p class="notice notice-info" role="status">Not enough coins yet. Win battles to earn more: 3 per right answer, 10 for beating a boss, double on the daily challenge.</p>
+      {% elif message == "owned" %}<p class="notice notice-info" role="status">You already own that one.</p>{% endif %}
+      <p class="muted">Buddies grow too: a glowing aura at level 3 and sparkles at level 6. <a href="{{ url_for('world.choose') }}">Switch buddy</a></p>
+    </div>
+  </section>
+
+  <ul class="shop-grid">
+    {% for it in items %}
+    {%- set preview = dict(buddy.gear) -%}
+    {%- set _ = preview.update({it.slot: it.code}) -%}
+    <li class="card shop-item {% if it.on %}shop-on{% endif %}">
+      {{ buddy_svg(buddy.code, preview, "idle", 1, cls="buddy-sm") }}
+      <h2 class="shop-name">{{ it.name }}</h2>
+      <p class="shop-slot muted">{{ {"head": "Hat", "face": "Face", "neck": "Neck", "back": "Back"}[it.slot] }}</p>
+      {% if it.owned %}
+      <form method="post" action="{{ url_for('world.wear') }}">
+        {{ csrf() }}<input type="hidden" name="item" value="{{ it.code }}"><input type="hidden" name="on" value="{{ '0' if it.on else '1' }}">
+        <button class="btn btn-small {{ 'btn-ghost' if it.on else 'btn-gold' }} btn-block" type="submit">{{ "Take off" if it.on else "Wear it" }}</button>
+      </form>
+      {% else %}
+      <form method="post" action="{{ url_for('world.buy') }}">
+        {{ csrf() }}<input type="hidden" name="item" value="{{ it.code }}">
+        <button class="btn btn-small btn-go btn-block" type="submit" {% if coins < it.price %}aria-disabled="true" data-poor{% endif %}>
+          <span class="coin" aria-hidden="true"></span> {{ it.price }} · Buy
+        </button>
+      </form>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

@@ -131,6 +131,75 @@
     });
   });
 
+  // 8-bit sound effects, synthesised with Web Audio (no audio files). Mute is remembered.
+  var Sound = (function () {
+    var ctx = null;
+    var on = true;
+    try { on = localStorage.getItem("eq-sound") !== "off"; } catch (e) { /* storage blocked */ }
+    var SONGS = {
+      correct: [[523, 0], [659, 0.07], [784, 0.14], [1047, 0.21]],
+      wrong: [[220, 0, "sawtooth", 0.18], [165, 0.16, "sawtooth", 0.24]],
+      oops: [[330, 0, "triangle", 0.12], [262, 0.12, "triangle", 0.16]],
+      hint: [[1319, 0, "triangle"], [1760, 0.08, "triangle"], [2093, 0.16, "triangle"]],
+      start: [[392, 0], [392, 0.12], [523, 0.24, "square", 0.25]],
+      coin: [[988, 0], [1319, 0.07, "square", 0.2]],
+      click: [[660, 0, "square", 0.035]],
+      victory: [[523, 0], [659, 0.12], [784, 0.24], [1047, 0.36, "square", 0.18], [784, 0.54], [1047, 0.66, "square", 0.4]],
+      escape: [[392, 0, "triangle"], [330, 0.15, "triangle"], [262, 0.3, "triangle", 0.3]],
+      levelup: [[523, 0], [659, 0.1], [784, 0.2], [1047, 0.3], [1319, 0.42, "square", 0.18], [1568, 0.6, "square", 0.45]]
+    };
+    function audio() {
+      if (!ctx) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        ctx = new AC();
+      }
+      if (ctx.state === "suspended") ctx.resume();
+      return ctx;
+    }
+    function play(name) {
+      var song = SONGS[name];
+      if (!on || !song) return;
+      var a = audio();
+      if (!a) return;
+      song.forEach(function (n) {
+        var t = a.currentTime + n[1], len = n[3] || 0.1;
+        var osc = a.createOscillator(), gain = a.createGain();
+        osc.type = n[2] || "square";
+        osc.frequency.setValueAtTime(n[0], t);
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(0.06, t + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + len);
+        osc.connect(gain).connect(a.destination);
+        osc.start(t);
+        osc.stop(t + len + 0.02);
+      });
+    }
+    function setOn(value) {
+      on = value;
+      try { localStorage.setItem("eq-sound", on ? "on" : "off"); } catch (e) { /* storage blocked */ }
+    }
+    return { play: play, setOn: setOn, isOn: function () { return on; } };
+  })();
+
+  document.querySelectorAll("[data-sound-toggle]").forEach(function (btn) {
+    btn.hidden = false;
+    function show() {
+      btn.textContent = Sound.isOn() ? "🔊" : "🔇";
+      btn.setAttribute("aria-pressed", String(Sound.isOn()));
+      btn.setAttribute("aria-label", Sound.isOn() ? "Sound effects on" : "Sound effects off");
+    }
+    btn.addEventListener("click", function () { Sound.setOn(!Sound.isOn()); show(); Sound.play("click"); });
+    show();
+  });
+
+  // The page says which sound fits what just happened (a hit, a miss, a victory…)
+  var cue = document.body.dataset.sound;
+  if (cue) setTimeout(function () { Sound.play(cue); }, 250);
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("button.answer, .btn, .buddy-option")) Sound.play("click");
+  });
+
   // A short burst of pixel confetti for a level up or new badge
   var party = document.querySelector("[data-celebrate]");
   if (party && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {

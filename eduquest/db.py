@@ -81,6 +81,23 @@ MIGRATIONS = [
         PRIMARY KEY (student_id, code)
     );
     """,
+    # 2: the game layer (buddies, coins, shop, combos, daily challenge, boss battles)
+    """
+    ALTER TABLE students ADD COLUMN buddy TEXT;
+    ALTER TABLE students ADD COLUMN coins INTEGER NOT NULL DEFAULT 0 CHECK (coins >= 0);
+    ALTER TABLE quests ADD COLUMN daily INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE quests ADD COLUMN coins INTEGER;
+    ALTER TABLE quests ADD COLUMN best_combo INTEGER;
+    ALTER TABLE quests ADD COLUMN boss_defeated INTEGER;
+
+    CREATE TABLE inventory (
+        student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+        item TEXT NOT NULL,
+        equipped INTEGER NOT NULL DEFAULT 0,
+        bought_at TEXT NOT NULL,
+        PRIMARY KEY (student_id, item)
+    );
+    """,
 ]
 
 

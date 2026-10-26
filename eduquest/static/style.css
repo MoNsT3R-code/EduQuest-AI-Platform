@@ -40,11 +40,7 @@ body {
   line-height: 1.5;
   color: var(--ink);
   background-color: var(--sky);
-  background-image:
-    radial-gradient(ellipse 120px 44px at 12% 9%, var(--cloud) 60%, transparent 62%),
-    radial-gradient(ellipse 80px 32px at 19% 11%, var(--cloud) 60%, transparent 62%),
-    radial-gradient(ellipse 140px 48px at 78% 6%, var(--cloud) 60%, transparent 62%),
-    radial-gradient(ellipse 90px 34px at 86% 9%, var(--cloud) 60%, transparent 62%);
+  background-image: linear-gradient(180deg, #4f86f5 0%, var(--sky) 45%, #8fb8ff 100%);
   background-attachment: fixed;
 }
 main { flex: 1; padding: 28px 16px 56px; outline: none; }

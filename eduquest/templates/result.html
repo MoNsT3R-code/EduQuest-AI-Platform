@@ -1,9 +1,27 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf, bar %}
+{% from "_characters.html" import buddy_svg, monster_svg %}
 {% block title %}Quest results{% endblock %}
 {% block body_class %}page-result{% endblock %}
+{% block sound %}{{ "levelup" if levelled_up else ("victory" if defeated else "escape") }}{% endblock %}
 {% block content %}
 <div class="container">
+  <section class="outcome {{ 'outcome-win' if defeated else 'outcome-escape' }}" aria-labelledby="outcome-title">
+    <div class="outcome-stage" aria-hidden="true">
+      {{ buddy_svg(buddy.code, buddy.gear, "dance" if defeated or pred.label == "High" else "cheer", buddy.stage) }}
+      {{ monster_svg(monster.id, "ko" if defeated else "escape") }}
+    </div>
+    <div class="outcome-text">
+      <h2 id="outcome-title" class="outcome-title">{% if defeated %}Boss defeated!{% else %}{{ hits }} of 5 hits{% endif %}</h2>
+      <p class="bubble bubble-static">{{ outro }}</p>
+      <ul class="loot" aria-label="Rewards">
+        <li class="loot-coins"><span class="coin" aria-hidden="true"></span> +{{ quest.coins or 0 }} coins</li>
+        <li>⚡ +{{ quest.xp }} XP</li>
+        {% if quest.best_combo and quest.best_combo >= 2 %}<li>🔥 Best combo ×{{ quest.best_combo }}</li>{% endif %}
+        {% if quest.daily %}<li>📅 Daily challenge bonus</li>{% endif %}
+      </ul>
+    </div>
+  </section>
   <section class="result-hero tier-bg-{{ pred.label | lower }}" {% if levelled_up or new_badges %}data-celebrate{% endif %}>
     <div class="result-badge" aria-hidden="true">{{ tier.emoji }}</div>
     <div class="result-main">

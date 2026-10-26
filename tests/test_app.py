@@ -160,9 +160,91 @@ def test_export_and_delete(client, app):
 def test_every_page_renders(client, app):
     assert client.get("/about-ai").status_code == 200
     sign_up(client)
+    post(client, "/buddy", buddy="blaze")
     qid = play_quest(client, app, subject="Computer Science")
-    for url in ("/home", "/dashboard", f"/quest/{qid}/result", "/about-ai", "/nope"):
-        assert client.get(url).status_code in (200, 404)
+    for url in ("/home", "/dashboard", f"/quest/{qid}/result", "/about-ai", "/shop", "/buddy"):
+        assert client.get(url).status_code == 200, url
+    assert client.get("/nope").status_code == 404
+
+
+# ── The game layer ──
+
+def student_row(app):
+    conn = connect(app.config["DATABASE"])
+    row = conn.execute("SELECT * FROM students").fetchone()
+    conn.close()
+    return row
+
+
+def test_new_player_picks_a_buddy_first(client):
+    sign_up(client)
+    r = client.get("/home")
+    assert r.status_code == 302 and r.headers["Location"].endswith("/buddy")
+    assert post(client, "/buddy", buddy="dragon-king").status_code == 400
+    post(client, "/buddy", buddy="hoot")
+    page = client.get("/home").data.decode()
+    assert "buddy-hoot" in page and "Daily challenge" in page and "Chapter 1" in page
+
+
+def test_battle_arena_reacts_to_answers(client, app):
+    sign_up(client)
+    post(client, "/buddy", buddy="robo")
+    r = post(client, "/quest/start", subject="Mathematics")
+    qid = int(r.headers["Location"].rsplit("/", 1)[1])
+    page = client.get(f"/quest/{qid}").data.decode()
+    assert "monster--appear" in page and "Number Golem" in page and page.count("heart-lost") == 0
+    post(client, f"/quest/{qid}/answer", choice=answer_index(app, qid))
+    page = client.get(f"/quest/{qid}").data.decode()
+    assert "monster--hit" in page and "buddy--cheer" in page and page.count("heart-lost") == 1
+    assert 'data-sound="correct"' in page
+
+
+def test_perfect_quest_beats_the_boss_and_pays_coins(client, app):
+    sign_up(client)
+    post(client, "/buddy", buddy="robo")
+    qid = play_quest(client, app)
+    conn = connect(app.config["DATABASE"])
+    q = conn.execute("SELECT * FROM quests WHERE id = ?", (qid,)).fetchone()
+    badges = {r[0] for r in conn.execute("SELECT code FROM badges")}
+    assert q["boss_defeated"] == 1 and q["best_combo"] == 5
+    expected = (5 * 3 + 10) * (2 if q["daily"] else 1)
+    assert q["coins"] == expected and student_row(app)["coins"] == expected
+    assert {"boss_slayer", "combo_5"} <= badges
+    assert "Boss defeated!" in client.get(f"/quest/{qid}/result").data.decode()
+
+
+def test_daily_challenge_doubles_coins_once_a_day(client, app):
+    from eduquest import game
+    from eduquest.quests import today
+    sign_up(client)
+    post(client, "/buddy", buddy="robo")
+    subject = game.daily_subject(today())
+    first, second = play_quest(client, app, subject=subject), play_quest(client, app, subject=subject)
+    conn = connect(app.config["DATABASE"])
+    daily = [r[0] for r in conn.execute("SELECT daily FROM quests WHERE id IN (?, ?) ORDER BY id", (first, second))]
+    assert daily == [1, 0]
+    assert conn.execute("SELECT 1 FROM badges WHERE code = 'daily_hero'").fetchone()
+
+
+def test_shop_needs_coins_then_buys_and_equips(client, app):
+    sign_up(client)
+    post(client, "/buddy", buddy="hoot")
+    r = post(client, "/shop/buy", item="crown")
+    assert "m=poor" in r.headers["Location"] and student_row(app)["coins"] == 0
+    conn = connect(app.config["DATABASE"])
+    conn.execute("UPDATE students SET coins = 300")
+    conn.commit()
+    post(client, "/shop/buy", item="party_hat")
+    post(client, "/shop/buy", item="crown")        # same slot: the crown replaces the hat
+    assert student_row(app)["coins"] == 300 - 40 - 250
+    worn = dict(conn.execute("SELECT item, equipped FROM inventory").fetchall())
+    assert worn == {"party_hat": 0, "crown": 1}
+    post(client, "/shop/wear", item="party_hat", on="1")
+    worn = dict(conn.execute("SELECT item, equipped FROM inventory").fetchall())
+    assert worn == {"party_hat": 1, "crown": 0}
+    assert post(client, "/shop/wear", item="jetpack", on="1").status_code == 400  # not owned
+    assert post(client, "/shop/buy", item="free-gold").status_code == 400
+    assert "g-hat" in client.get("/shop").data.decode()
 
 
 # ── The AI ──

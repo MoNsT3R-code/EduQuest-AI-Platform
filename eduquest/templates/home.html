@@ -1,36 +1,75 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf, bar, tier_chip %}
+{% from "_characters.html" import buddy_svg, monster_svg %}
 {% block title %}Quests{% endblock %}
+{% block body_class %}page-home{% endblock %}
 {% block content %}
 <div class="container">
-  <section class="player-banner">
-    <div>
-      <p class="eyebrow-pixel">{% if welcome %}Player created{% else %}Welcome back{% endif %}</p>
-      <h1>{% if welcome %}Hi {{ g.student.name }}, ready for your first quest?{% else %}Hi {{ g.student.name }}, pick a quest{% endif %}</h1>
+  <section class="camp">
+    <div class="camp-buddy">
+      <p class="bubble" role="status">
+        {% if met %}Hi {{ g.student.name }}, I'm {{ buddy.name }}! {{ buddy.line }}
+        {% elif welcome %}Hi {{ g.student.name }}! Ready for your first boss battle?
+        {% elif daily_done %}Daily challenge done! Want to keep training?
+        {% else %}Today's daily challenge is {{ daily }}. Beat the {{ daily_monster.name }} for double coins!{% endif %}
+      </p>
+      {{ buddy_svg(buddy.code, buddy.gear, "wave", buddy.stage, cls="buddy-lg", label=buddy.name ~ ", your buddy, waving") }}
+      <a class="camp-link" href="{{ url_for('world.shop') }}">Dress up {{ buddy.name }} →</a>
     </div>
-    <div class="level-box" aria-label="Level {{ level.level }}, {{ level.into }} of {{ level.needed }} XP to the next level">
-      <span class="level-num">LV {{ level.level }}</span>
-      {{ bar(level.into, level.needed, "bar-xp") }}
-      <span class="level-caption tabular">{{ level.into }} / {{ level.needed }} XP · {{ xp }} total</span>
+    <div class="camp-info">
+      <p class="eyebrow-pixel">{% if welcome %}Player created{% else %}Base camp{% endif %}</p>
+      <h1>Hi {{ g.student.name }}, pick your quest</h1>
+      <div class="level-box" aria-label="Level {{ level.level }}, {{ level.into }} of {{ level.needed }} XP to the next level">
+        <span class="level-num">LV {{ level.level }}</span>
+        {{ bar(level.into, level.needed, "bar-xp") }}
+        <span class="level-caption tabular">{{ level.into }} / {{ level.needed }} XP · {{ xp }} total</span>
+      </div>
+      <div class="daily-card {% if daily_done %}daily-done{% endif %}">
+        <span class="daily-icon" aria-hidden="true">{{ "✅" if daily_done else "📅" }}</span>
+        <div>
+          <p class="daily-title">{% if daily_done %}Daily challenge complete{% else %}Daily challenge: {{ daily }}{% endif %}</p>
+          <p class="daily-sub">{% if daily_done %}Come back tomorrow for a new one.{% else %}Double coins and +25 XP for your first {{ daily }} quest today.{% endif %}</p>
+        </div>
+      </div>
     </div>
   </section>
 
   {% if unfinished %}
   <section class="notice notice-resume">
-    <p><strong>You have a {{ unfinished.subject }} quest in progress.</strong> Pick up where you left off.</p>
+    <p><strong>Your {{ unfinished.subject }} battle is still going.</strong> Jump back in!</p>
     <a class="btn btn-small btn-go" href="{{ url_for('quests.play', qid=unfinished.id) }}">Resume</a>
   </section>
   {% endif %}
 
   <section class="subject-grid" aria-label="Subjects">
     {% for s in subjects %}
-    <article class="card subject-card">
+    <article class="card subject-card {% if s.daily and not daily_done %}subject-daily{% endif %}">
+      {% if s.daily and not daily_done %}<span class="ribbon">×2 coins today</span>{% endif %}
       <div class="subject-top">
         <span class="subject-emoji" aria-hidden="true">{{ s.emoji }}</span>
         {{ tier_chip(s.label, s.tier) }}
       </div>
       <h2>{{ s.name }}</h2>
-      <p class="muted">{{ s.blurb }}</p>
+      <p class="muted">{{ s.monster.lair }} · boss: <strong>{{ s.monster.name }}</strong></p>
+      <div class="foe-peek" aria-hidden="true">{{ monster_svg(s.monster.id, "idle") }}</div>
+
+      <figure class="adventure-map">
+        <svg viewBox="0 0 300 74" class="map-svg" role="img" aria-label="Chapter {{ s.map.chapter }}: {{ s.map.done }} of 10 stops done">
+          <polyline points="{{ s.map.points }}" class="map-road"/>
+          {% for st in s.map.stops %}
+          <g class="map-stop {% if st.done %}stop-done{% elif st.next %}stop-next{% endif %} {% if st.boss %}stop-boss{% endif %}">
+            {% if st.boss %}
+            <path d="M{{ st.x - 11 }} {{ st.y + 9 }} v-14 h4 v4 h4 v-4 h6 v4 h4 v-4 h4 v14 z" class="castle"/>
+            {% else %}
+            <circle cx="{{ st.x }}" cy="{{ st.y }}" r="{{ 8 if st.next else 6.5 }}"/>
+            {% if st.done %}<path d="M{{ st.x - 3 }} {{ st.y }} l2.2 2.4 4 -4.8" class="tick"/>{% endif %}
+            {% endif %}
+          </g>
+          {% endfor %}
+        </svg>
+        <figcaption class="map-caption"><span>Chapter {{ s.map.chapter }}</span><span class="tabular">{{ s.map.done }}/10 · ⚔️ {{ s.bosses }} won</span></figcaption>
+      </figure>
+
       <dl class="subject-facts">
         <div><dt>Mode</dt><dd class="mode mode-{{ s.mode | lower }}">{{ s.mode }}</dd></div>
         <div><dt>Quests</dt><dd class="tabular">{{ s.quests }}</dd></div>
@@ -44,18 +83,18 @@
       <form method="post" action="{{ url_for('quests.start') }}">
         {{ csrf() }}
         <input type="hidden" name="subject" value="{{ s.name }}">
-        <button class="btn btn-go btn-block" type="submit">Start {{ s.name }} quest</button>
+        <button class="btn btn-go btn-block" type="submit">⚔️ Battle the {{ s.monster.name }}</button>
       </form>
     </article>
     {% endfor %}
   </section>
 
   <section class="how-it-adapts">
-    <h2 class="section-title">How your quests change</h2>
+    <h2 class="section-title">How battles work</h2>
     <ol class="steps">
-      <li><strong>You answer five questions.</strong> Each one is picked for your level: get one right and the next is a bit harder.</li>
-      <li><strong>The AI looks at how it went</strong>: your score, hints, streak and how many quests you finish.</li>
-      <li><strong>Your next quest adapts.</strong> Bronze gets more help, Gold gets harder challenges. <a href="{{ url_for('dashboard.about_ai') }}">How it works</a></li>
+      <li><strong>Each right answer is an attack.</strong> Knock off all five hearts to defeat the boss. Answer right first time in a row for a combo.</li>
+      <li><strong>The AI watches how it went</strong>: your score, hints, streak and how many quests you finish.</li>
+      <li><strong>Your next battle adapts</strong>, and your coins buy gear for {{ buddy.name }}. <a href="{{ url_for('dashboard.about_ai') }}">How the AI works</a></li>
     </ol>
   </section>
 </div>

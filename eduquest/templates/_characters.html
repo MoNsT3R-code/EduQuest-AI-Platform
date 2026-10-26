@@ -1,0 +1,181 @@
+{#
+  Hand-drawn SVG characters. Every moving part has a class, and CSS animates it by state:
+  idle, wave, cheer, sad, think, dance. Gear sits in four slots: back, neck, face, head.
+  All three buddies share the same eye line (y=46) and neck (y=72), so gear fits each one.
+#}
+
+{% macro gear_back(item) %}
+  {% if item == "cape" %}
+  <g class="g-cape"><path d="M36 72 Q18 108 24 128 L96 128 Q102 108 84 72 Z" fill="#e2483a" stroke="#2d1b00" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M60 78 L60 126" stroke="#a92b20" stroke-width="2" opacity=".6"/></g>
+  {% elif item == "jetpack" %}
+  <g class="g-jetpack">
+    <rect x="12" y="70" width="17" height="38" rx="7" fill="#b8c2cc" stroke="#2d1b00" stroke-width="3"/>
+    <rect x="91" y="70" width="17" height="38" rx="7" fill="#b8c2cc" stroke="#2d1b00" stroke-width="3"/>
+    <g class="g-flame"><path d="M14 108 Q20 130 27 108 Z" fill="#ffd23f" stroke="#e07c24" stroke-width="2"/>
+      <path d="M93 108 Q99 130 106 108 Z" fill="#ffd23f" stroke="#e07c24" stroke-width="2"/></g>
+  </g>
+  {% endif %}
+{% endmacro %}
+
+{% macro gear_front(slot, item) %}
+  {% if item == "bowtie" %}
+  <g class="g-bowtie"><path d="M60 74 L45 66 L45 82 Z M60 74 L75 66 L75 82 Z" fill="#e2483a" stroke="#2d1b00" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="60" cy="74" r="4" fill="#a92b20" stroke="#2d1b00" stroke-width="2"/></g>
+  {% elif item == "scarf" %}
+  <g class="g-scarf"><rect x="32" y="66" width="56" height="11" rx="5.5" fill="#2fb969" stroke="#2d1b00" stroke-width="2.5"/>
+    <rect x="70" y="72" width="11" height="24" rx="4" fill="#2fb969" stroke="#2d1b00" stroke-width="2.5"/>
+    <path d="M44 67 v9 M56 67 v9 M72 76 h9 M72 84 h9" stroke="#ffd23f" stroke-width="2.5"/></g>
+  {% elif item == "shades" %}
+  <g class="g-shades"><rect x="36" y="39" width="24" height="14" rx="6" fill="#2d1b00"/>
+    <rect x="62" y="39" width="24" height="14" rx="6" fill="#2d1b00"/><path d="M58 44 h6" stroke="#2d1b00" stroke-width="3"/>
+    <path d="M41 43 l6 0 M67 43 l6 0" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".7"/></g>
+  {% elif item == "monocle" %}
+  <g class="g-monocle"><circle cx="72" cy="46" r="10" fill="rgba(255,255,255,.25)" stroke="#c99700" stroke-width="3"/>
+    <path d="M80 52 Q88 64 82 74" fill="none" stroke="#c99700" stroke-width="2" stroke-dasharray="3 2"/></g>
+  {% elif item == "party_hat" %}
+  <g class="g-hat"><path d="M44 24 L60 -6 L76 24 Z" fill="#ff6fa8" stroke="#2d1b00" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M49 15 L71 15 M53 6 L67 6" stroke="#ffd23f" stroke-width="3"/><circle cx="60" cy="-7" r="5" fill="#ffd23f" stroke="#2d1b00" stroke-width="2.5"/></g>
+  {% elif item == "wizard_hat" %}
+  <g class="g-hat"><path d="M42 24 Q56 6 62 -14 Q66 6 80 24 Z" fill="#6b4bd6" stroke="#2d1b00" stroke-width="3" stroke-linejoin="round"/>
+    <ellipse cx="61" cy="24" rx="31" ry="6" fill="#6b4bd6" stroke="#2d1b00" stroke-width="3"/>
+    <path d="M57 6 l2 4 4 1 -3 3 1 4 -4 -2 -4 2 1 -4 -3 -3 4 -1 z" fill="#ffd23f"/><circle cx="68" cy="16" r="2" fill="#ffd23f"/></g>
+  {% elif item == "crown" %}
+  <g class="g-hat g-crown"><path d="M40 26 L40 6 L50 16 L60 0 L70 16 L80 6 L80 26 Z" fill="#ffd23f" stroke="#2d1b00" stroke-width="3" stroke-linejoin="round"/>
+    <circle cx="50" cy="20" r="3" fill="#e2483a"/><circle cx="60" cy="18" r="3.5" fill="#2f6fe4"/><circle cx="70" cy="20" r="3" fill="#2fb969"/></g>
+  {% endif %}
+{% endmacro %}
+
+{% macro buddy_svg(code, gear={}, state="idle", stage=1, cls="", label="") %}
+{%- set top = {"robo": 0, "hoot": 4, "blaze": 0}[code] -%}
+<svg class="buddy buddy-{{ code }} buddy--{{ state }} stage-{{ stage }} {% if gear.head %}has-hat{% endif %} {{ cls }}"
+     viewBox="-10 -20 140 160" {% if label %}role="img" aria-label="{{ label }}"{% else %}aria-hidden="true"{% endif %} focusable="false">
+  {% if stage >= 2 %}<circle class="b-aura" cx="60" cy="74" r="60"/>{% endif %}
+  <ellipse class="b-shadow" cx="60" cy="134" rx="30" ry="5"/>
+  <g class="b-bob">
+    {{ gear_back(gear.back) }}
+
+    {% if code == "robo" %}
+    <g class="b-antenna-group"><path d="M60 22 V10" stroke="#2d1b00" stroke-width="3"/><circle class="b-antenna" cx="60" cy="8" r="5.5" fill="#e2483a" stroke="#2d1b00" stroke-width="2.5"/></g>
+    <g class="b-arm b-arm-l"><rect x="17" y="78" width="15" height="30" rx="7.5" fill="#7fb8ff" stroke="#2d1b00" stroke-width="3"/></g>
+    <g class="b-arm b-arm-r"><rect x="88" y="78" width="15" height="30" rx="7.5" fill="#7fb8ff" stroke="#2d1b00" stroke-width="3"/></g>
+    <rect x="42" y="108" width="13" height="18" rx="4" fill="#4a8fe0" stroke="#2d1b00" stroke-width="3"/>
+    <rect x="65" y="108" width="13" height="18" rx="4" fill="#4a8fe0" stroke="#2d1b00" stroke-width="3"/>
+    <rect x="34" y="72" width="52" height="40" rx="10" fill="#4a8fe0" stroke="#2d1b00" stroke-width="3"/>
+    <circle class="b-core" cx="60" cy="91" r="7" fill="#ffd23f" stroke="#2d1b00" stroke-width="2.5"/>
+    <g class="b-head">
+      <rect x="20" y="38" width="8" height="16" rx="3" fill="#4a8fe0" stroke="#2d1b00" stroke-width="2.5"/>
+      <rect x="92" y="38" width="8" height="16" rx="3" fill="#4a8fe0" stroke="#2d1b00" stroke-width="2.5"/>
+      <rect x="26" y="22" width="68" height="50" rx="13" fill="#7fb8ff" stroke="#2d1b00" stroke-width="3"/>
+      <rect x="34" y="30" width="52" height="34" rx="8" fill="#eaf4ff" stroke="#2d1b00" stroke-width="2"/>
+      <g class="b-eyes"><circle cx="48" cy="46" r="5.5" fill="#2d1b00"/><circle cx="72" cy="46" r="5.5" fill="#2d1b00"/>
+        <circle cx="50" cy="44" r="1.8" fill="#fff"/><circle cx="74" cy="44" r="1.8" fill="#fff"/></g>
+      <ellipse cx="40" cy="56" rx="4" ry="2.5" fill="#ff8fb1" opacity=".7"/><ellipse cx="80" cy="56" rx="4" ry="2.5" fill="#ff8fb1" opacity=".7"/>
+      <path class="b-mouth b-mouth-happy" d="M52 55 Q60 62 68 55" fill="none" stroke="#2d1b00" stroke-width="2.5" stroke-linecap="round"/>
+      <path class="b-mouth b-mouth-sad" d="M52 60 Q60 54 68 60" fill="none" stroke="#2d1b00" stroke-width="2.5" stroke-linecap="round"/>
+      <ellipse class="b-mouth b-mouth-open" cx="60" cy="57" rx="6" ry="4.5" fill="#2d1b00"/>
+      {{ gear_front("face", gear.face) }}
+    </g>
+
+    {% elif code == "hoot" %}
+    <g class="b-arm b-arm-l"><ellipse cx="25" cy="84" rx="10" ry="23" fill="#9c6337" stroke="#2d1b00" stroke-width="3"/></g>
+    <g class="b-arm b-arm-r"><ellipse cx="95" cy="84" rx="10" ry="23" fill="#9c6337" stroke="#2d1b00" stroke-width="3"/></g>
+    <path d="M46 120 l-4 8 M50 120 v9 M54 120 l4 8 M66 120 l-4 8 M70 120 v9 M74 120 l4 8" stroke="#e07c24" stroke-width="3.5" stroke-linecap="round"/>
+    <g class="b-head">
+      <path class="b-tuft" d="M34 34 L38 12 L52 28 Z M86 34 L82 12 L68 28 Z" fill="#c98a52" stroke="#2d1b00" stroke-width="3" stroke-linejoin="round"/>
+      <ellipse cx="60" cy="76" rx="38" ry="48" fill="#c98a52" stroke="#2d1b00" stroke-width="3"/>
+      <ellipse cx="60" cy="94" rx="24" ry="25" fill="#f6dcb5"/>
+      <path d="M48 88 q4 4 8 0 q4 4 8 0 q4 4 8 0 M52 100 q4 4 8 0 q4 4 8 0" fill="none" stroke="#c98a52" stroke-width="2"/>
+      <circle cx="48" cy="46" r="13" fill="#fff" stroke="#2d1b00" stroke-width="3"/><circle cx="72" cy="46" r="13" fill="#fff" stroke="#2d1b00" stroke-width="3"/>
+      <g class="b-eyes"><circle cx="48" cy="47" r="6" fill="#2d1b00"/><circle cx="72" cy="47" r="6" fill="#2d1b00"/>
+        <circle cx="50" cy="44.5" r="2" fill="#fff"/><circle cx="74" cy="44.5" r="2" fill="#fff"/></g>
+      <path class="b-brows" d="M37 32 L56 38 M83 32 L64 38" stroke="#2d1b00" stroke-width="3" stroke-linecap="round"/>
+      <path d="M55 58 L65 58 L60 67 Z" fill="#ffd23f" stroke="#2d1b00" stroke-width="2.5" stroke-linejoin="round"/>
+      <ellipse class="b-mouth b-mouth-open" cx="60" cy="66" rx="4" ry="3" fill="#2d1b00"/>
+      {{ gear_front("face", gear.face) }}
+    </g>
+
+    {% else %}
+    <path class="b-tail" d="M82 112 Q108 122 112 100 L118 104 L112 92 L104 100 Q102 112 80 104 Z" fill="#49c26b" stroke="#2d1b00" stroke-width="3" stroke-linejoin="round"/>
+    <g class="b-arm b-arm-l"><path d="M36 84 Q8 64 10 98 Q18 92 22 102 Q28 94 34 100 Z" fill="#2f9e55" stroke="#2d1b00" stroke-width="3" stroke-linejoin="round"/></g>
+    <g class="b-arm b-arm-r"><path d="M84 84 Q112 64 110 98 Q102 92 98 102 Q92 94 86 100 Z" fill="#2f9e55" stroke="#2d1b00" stroke-width="3" stroke-linejoin="round"/></g>
+    <ellipse cx="47" cy="124" rx="10" ry="6" fill="#2f9e55" stroke="#2d1b00" stroke-width="3"/><ellipse cx="73" cy="124" rx="10" ry="6" fill="#2f9e55" stroke="#2d1b00" stroke-width="3"/>
+    <ellipse cx="60" cy="98" rx="29" ry="26" fill="#49c26b" stroke="#2d1b00" stroke-width="3"/>
+    <path d="M46 88 h28 M44 98 h32 M46 108 h28" stroke="#f4e3a1" stroke-width="6" stroke-linecap="round"/>
+    <g class="b-head">
+      <path d="M40 26 L44 10 L52 24 Z M80 26 L76 10 L68 24 Z" fill="#ffd23f" stroke="#2d1b00" stroke-width="2.5" stroke-linejoin="round"/>
+      <rect x="26" y="20" width="68" height="54" rx="26" fill="#49c26b" stroke="#2d1b00" stroke-width="3"/>
+      <ellipse cx="48" cy="44" rx="9" ry="10" fill="#fff" stroke="#2d1b00" stroke-width="2"/><ellipse cx="72" cy="44" rx="9" ry="10" fill="#fff" stroke="#2d1b00" stroke-width="2"/>
+      <g class="b-eyes"><circle cx="49" cy="46" r="5" fill="#2d1b00"/><circle cx="71" cy="46" r="5" fill="#2d1b00"/>
+        <circle cx="51" cy="44" r="1.7" fill="#fff"/><circle cx="73" cy="44" r="1.7" fill="#fff"/></g>
+      <ellipse cx="60" cy="61" rx="15" ry="9" fill="#7fdc96" stroke="#2d1b00" stroke-width="2.5"/>
+      <circle cx="55" cy="58" r="1.6" fill="#2d1b00"/><circle cx="65" cy="58" r="1.6" fill="#2d1b00"/>
+      <path class="b-mouth b-mouth-happy" d="M51 64 Q60 70 69 64" fill="none" stroke="#2d1b00" stroke-width="2.5" stroke-linecap="round"/>
+      <path class="b-mouth b-mouth-sad" d="M52 68 Q60 63 68 68" fill="none" stroke="#2d1b00" stroke-width="2.5" stroke-linecap="round"/>
+      <ellipse class="b-mouth b-mouth-open" cx="60" cy="66" rx="5" ry="3.5" fill="#2d1b00"/>
+      <g class="b-fire"><path d="M74 64 Q92 52 104 62 Q96 64 102 70 Q90 68 92 76 Q84 70 74 68 Z" fill="#ffd23f" stroke="#e07c24" stroke-width="2.5" stroke-linejoin="round"/></g>
+      {{ gear_front("face", gear.face) }}
+    </g>
+    {% endif %}
+
+    <path class="b-tear" d="M41 54 q-3 6 0 8 q3 -2 0 -8 Z" fill="#7fb8ff" stroke="#2d1b00" stroke-width="1.5"/>
+    {{ gear_front("neck", gear.neck) }}
+    <g transform="translate(0 {{ top }})">{{ gear_front("head", gear.head) }}</g>
+    <g class="b-think"><circle cx="100" cy="18" r="3" fill="#fff" stroke="#2d1b00" stroke-width="2"/><circle cx="108" cy="8" r="5" fill="#fff" stroke="#2d1b00" stroke-width="2"/>
+      <text x="108" y="12" text-anchor="middle" font-size="9" font-weight="900" fill="#2d1b00">?</text></g>
+  </g>
+  {% if stage >= 3 %}
+  <g class="b-sparkles"><path d="M10 20 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 z" fill="#ffd23f"/><path d="M108 58 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 z" fill="#ffd23f"/></g>
+  {% endif %}
+</svg>
+{%- endmacro %}
+
+{% macro monster_svg(id, state="idle", label="") %}
+<svg class="monster monster-{{ id }} monster--{{ state }}" viewBox="0 0 140 140"
+     {% if label %}role="img" aria-label="{{ label }}"{% else %}aria-hidden="true"{% endif %} focusable="false">
+  <ellipse class="m-shadow" cx="70" cy="132" rx="40" ry="6"/>
+  <g class="m-body">
+  {% if id == "golem" %}
+    <g class="m-arm m-arm-l"><circle cx="22" cy="86" r="15" fill="#8a939d" stroke="#2d1b00" stroke-width="3"/></g>
+    <g class="m-arm m-arm-r"><circle cx="118" cy="86" r="15" fill="#8a939d" stroke="#2d1b00" stroke-width="3"/></g>
+    <rect x="44" y="112" width="18" height="18" rx="4" fill="#7b838c" stroke="#2d1b00" stroke-width="3"/>
+    <rect x="78" y="112" width="18" height="18" rx="4" fill="#7b838c" stroke="#2d1b00" stroke-width="3"/>
+    <rect x="30" y="34" width="80" height="84" rx="16" fill="#a3acb6" stroke="#2d1b00" stroke-width="3"/>
+    <path d="M38 30 L48 18 L60 30 M76 30 L90 14 L102 30" fill="#a3acb6" stroke="#2d1b00" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M40 98 l10 -8 6 6 M96 46 l-8 8" stroke="#6b737c" stroke-width="2.5" fill="none"/>
+    <text x="46" y="112" font-family="monospace" font-weight="900" font-size="15" fill="#6b737c">7+3</text>
+    <path d="M46 52 L62 58 M94 52 L78 58" stroke="#2d1b00" stroke-width="4" stroke-linecap="round"/>
+    <g class="m-eyes"><rect x="48" y="58" width="12" height="9" rx="2" fill="#ff8a2a" stroke="#2d1b00" stroke-width="2"/>
+      <rect x="80" y="58" width="12" height="9" rx="2" fill="#ff8a2a" stroke="#2d1b00" stroke-width="2"/></g>
+    <path d="M52 82 L58 76 L64 82 L70 76 L76 82 L82 76 L88 82" fill="none" stroke="#2d1b00" stroke-width="3" stroke-linejoin="round"/>
+  {% elif id == "gremlin" %}
+    <g class="m-letters"><text x="8" y="34" font-family="serif" font-weight="900" font-size="18" fill="#6b4bd6">A</text>
+      <text x="118" y="40" font-family="serif" font-weight="900" font-size="20" fill="#e2483a">?</text>
+      <text x="122" y="98" font-family="serif" font-weight="900" font-size="15" fill="#2f6fe4">z</text></g>
+    <path d="M46 40 L40 14 L60 34 Z M94 40 L100 14 L80 34 Z" fill="#ffd23f" stroke="#2d1b00" stroke-width="3" stroke-linejoin="round"/>
+    <g class="m-arm m-arm-l"><path d="M30 86 Q10 80 12 64" fill="none" stroke="#2d1b00" stroke-width="9" stroke-linecap="round"/><path d="M30 86 Q10 80 12 64" fill="none" stroke="#a46ee0" stroke-width="5" stroke-linecap="round"/></g>
+    <g class="m-arm m-arm-r"><path d="M110 86 Q130 80 128 64" fill="none" stroke="#2d1b00" stroke-width="9" stroke-linecap="round"/><path d="M110 86 Q130 80 128 64" fill="none" stroke="#a46ee0" stroke-width="5" stroke-linecap="round"/></g>
+    <path d="M28 124 Q16 70 70 34 Q124 70 112 124 Q92 130 70 124 Q48 130 28 124 Z" fill="#a46ee0" stroke="#2d1b00" stroke-width="3" stroke-linejoin="round"/>
+    <g class="m-eyes"><circle cx="54" cy="66" r="12" fill="#ffe66b" stroke="#2d1b00" stroke-width="3"/><circle cx="88" cy="68" r="9" fill="#ffe66b" stroke="#2d1b00" stroke-width="3"/>
+      <circle cx="56" cy="68" r="5" fill="#2d1b00"/><circle cx="89" cy="70" r="4" fill="#2d1b00"/></g>
+    <path d="M44 52 L62 58 M98 56 L82 60" stroke="#2d1b00" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M48 92 Q70 112 94 92 Z" fill="#2d1b00"/>
+    <path d="M54 93 l4 7 4 -7 M70 96 l4 7 4 -7 M84 93 l-3 6 -4 -6" fill="#fff"/>
+  {% else %}
+    <g class="m-antennae"><path d="M60 42 Q48 16 34 14 M80 42 Q92 16 106 14" fill="none" stroke="#2d1b00" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="34" cy="14" r="6" fill="#2fb969" stroke="#2d1b00" stroke-width="2.5"/><circle cx="106" cy="14" r="6" fill="#2fb969" stroke="#2d1b00" stroke-width="2.5"/></g>
+    <g class="m-legs"><path d="M40 82 L18 72 M38 96 L14 98 M42 110 L20 124 M100 82 L122 72 M102 96 L126 98 M98 110 L120 124" stroke="#2d1b00" stroke-width="5" stroke-linecap="round"/></g>
+    <ellipse cx="70" cy="94" rx="36" ry="32" fill="#e2483a" stroke="#2d1b00" stroke-width="3"/>
+    <path d="M70 64 V126" stroke="#2d1b00" stroke-width="3"/>
+    <circle cx="54" cy="88" r="6" fill="#2d1b00"/><circle cx="86" cy="88" r="6" fill="#2d1b00"/><circle cx="58" cy="108" r="5" fill="#2d1b00"/><circle cx="82" cy="108" r="5" fill="#2d1b00"/>
+    <circle cx="70" cy="56" r="20" fill="#3a2a4a" stroke="#2d1b00" stroke-width="3"/>
+    <g class="m-eyes"><circle cx="62" cy="54" r="6" fill="#fff"/><circle cx="78" cy="54" r="6" fill="#fff"/>
+      <circle cx="63" cy="55" r="3" fill="#e2483a"/><circle cx="77" cy="55" r="3" fill="#e2483a"/></g>
+    <path d="M58 46 L66 50 M82 46 L74 50" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M62 66 Q70 62 78 66" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+    <g class="m-glitch"><rect x="10" y="40" width="8" height="8" fill="#00e5ff"/><rect x="122" y="60" width="7" height="7" fill="#ff3cac"/><rect x="18" y="112" width="6" height="6" fill="#ff3cac"/></g>
+  {% endif %}
+  </g>
+  <g class="m-ko"><text x="70" y="22" text-anchor="middle" font-family="'Press Start 2P', monospace" font-size="16" fill="#ffd23f" stroke="#2d1b00" stroke-width="1">KO!</text></g>
+</svg>
+{%- endmacro %}

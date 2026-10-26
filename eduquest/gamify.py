@@ -22,6 +22,10 @@ BADGES = {
     "explorer": ("🧭", "Explorer", "Tried all three subjects"),
     "comeback": ("🚀", "Comeback", "Moved up a tier in a subject"),
     "level_5": ("👑", "Level 5", "Reached level 5"),
+    "boss_slayer": ("⚔️", "Boss Slayer", "Defeated a quest monster"),
+    "combo_5": ("🔥", "Combo King", "Five right first time in a row"),
+    "daily_hero": ("📅", "Daily Hero", "Finished a daily challenge"),
+    "shopper": ("🛍️", "Style Star", "Bought your buddy some gear"),
 }
 
 
@@ -41,10 +45,17 @@ def level_for(total_xp):
     return {"level": level, "into": into, "needed": LEVEL_XP, "percent": round(100 * into / LEVEL_XP)}
 
 
-def award(conn, student_id, quest_id, items, label, previous_label, features, total_xp):
+def grant(conn, student_id, code, quest_id=None):
+    """Give one badge if the student doesn't have it yet. Returns True when it is new."""
+    cur = conn.execute("INSERT OR IGNORE INTO badges (student_id, code, quest_id, earned_at) VALUES (?, ?, ?, ?)",
+                       (student_id, code, quest_id, now()))
+    return cur.rowcount == 1
+
+
+def award(conn, student_id, quest_id, items, label, previous_label, features, total_xp, extra=()):
     """Insert newly earned badges and return their codes."""
     have = {r["code"] for r in conn.execute("SELECT code FROM badges WHERE student_id = ?", (student_id,))}
-    earned = ["first_quest"]
+    earned = ["first_quest", *extra]
     if all(it["correct"] and it["tries"] == 1 for it in items):
         earned.append("perfect")
     if sum(it["hints_used"] for it in items) == 0:

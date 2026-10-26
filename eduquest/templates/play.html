@@ -1,9 +1,43 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
+{% from "_characters.html" import buddy_svg, monster_svg %}
 {% block title %}{{ quest.subject }} quest{% endblock %}
 {% block body_class %}page-play{% endblock %}
+{% block sound %}{{ {"hit": "correct", "hit_retry": "correct", "miss": "wrong", "oops": "oops", "hint": "hint", "start": "start"}.get(battle.event, "") }}{% endblock %}
 {% block content %}
+{%- set ev = battle.event -%}
+{%- set buddy_state = {"hit": "cheer", "hit_retry": "cheer", "miss": "sad", "oops": "think", "hint": "think", "start": "wave"}.get(ev, "idle") -%}
+{%- set monster_state = {"hit": "hit", "hit_retry": "hit", "miss": "attack", "oops": "taunt", "start": "appear"}.get(ev, "idle") -%}
 <div class="container container-narrow">
+  <section id="arena" class="arena arena-{{ battle.monster.id }} event-{{ ev or 'none' }}" aria-label="Boss battle">
+    <div class="arena-side arena-hero">
+      {% if battle.line %}<p class="bubble" role="status">{{ battle.line }}</p>{% endif %}
+      {{ buddy_svg(buddy.code, buddy.gear, buddy_state, buddy.stage, label=buddy.name ~ ", your buddy") }}
+      <span class="arena-name">{{ buddy.name }}</span>
+    </div>
+    <div class="arena-mid" aria-hidden="true">
+      {% if ev in ("hit", "hit_retry") %}
+      <span class="fx fx-shot fx-shot-{{ buddy.code }}">{{ {"robo": "⭐", "hoot": "🪶", "blaze": "🔥"}[buddy.code] }}</span>
+      {% elif ev == "miss" %}
+      <span class="fx fx-counter">💥</span>
+      {% endif %}
+      <span class="vs">VS</span>
+      {% if battle.combo >= 2 %}
+      <span class="combo {% if battle.combo >= 3 %}combo-hot{% endif %}">Combo ×{{ battle.combo }}</span>
+      {% endif %}
+    </div>
+    <div class="arena-side arena-foe">
+      <ol class="hearts" aria-label="{{ battle.monster.name }} has {{ battle.hearts - battle.lost }} of {{ battle.hearts }} hearts left">
+        {% for i in range(battle.hearts) %}
+        <li class="heart {% if i >= battle.hearts - battle.lost %}heart-lost{% endif %} {% if ev in ('hit', 'hit_retry') and i == battle.hearts - battle.lost %}heart-break{% endif %}"></li>
+        {% endfor %}
+      </ol>
+      {{ monster_svg(battle.monster.id, monster_state, label=battle.monster.name) }}
+      {% if ev in ("hit", "hit_retry") %}<span class="fx fx-damage" aria-hidden="true">-1</span>{% endif %}
+      <span class="arena-name">{{ battle.monster.name }}</span>
+    </div>
+    {% if battle.daily %}<span class="arena-daily">📅 Daily challenge · ×2 coins</span>{% endif %}
+  </section>
   <div class="play-bar">
     <span class="play-subject"><span aria-hidden="true">{{ subject.emoji }}</span> {{ quest.subject }}</span>
     <span class="mode mode-{{ quest.mode | lower }}">{{ quest.mode }}</span>

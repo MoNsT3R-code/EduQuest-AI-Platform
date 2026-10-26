@@ -32,10 +32,11 @@ def create_app(test_config=None):
     security.init_app(app)
     app.extensions["engagement_model"] = EngagementModel.load(app.config["MODEL_PATH"])
 
-    from . import auth, dashboard, quests
+    from . import auth, dashboard, quests, world
     app.register_blueprint(auth.bp)
     app.register_blueprint(quests.bp)
     app.register_blueprint(dashboard.bp)
+    app.register_blueprint(world.bp)
 
     for code, title in {400: "That didn't work", 403: "Not allowed", 404: "Page not found",
                         413: "That was too much", 429: "Slow down", 500: "Something broke"}.items():

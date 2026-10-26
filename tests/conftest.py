@@ -36,7 +36,7 @@ def post(client, url, **data):
     with client.session_transaction() as s:
         t = s.get("_csrf")
     if t is None:
-        client.get("/home")
+        client.get("/about-ai")  # always renders; signed-in pages carry the logout form's token
         with client.session_transaction() as s:
             t = s["_csrf"]
     return client.post(url, data={"csrf_token": t, **data})
