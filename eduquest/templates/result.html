@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, bar %}
+{% block title %}Quest results{% endblock %}
+{% block body_class %}page-result{% endblock %}
+{% block content %}
+<div class="container">
+  <section class="result-hero tier-bg-{{ pred.label | lower }}" {% if levelled_up or new_badges %}data-celebrate{% endif %}>
+    <div class="result-badge" aria-hidden="true">{{ tier.emoji }}</div>
+    <div class="result-main">
+      <p class="eyebrow-pixel">{{ quest.subject }} quest complete</p>
+      <h1>{{ tier.badge }}</h1>
+      <p class="lead">{{ tier.line }}
+        {% if previous and previous != pred.label %}You were {{ {"High": "Gold", "Medium": "Silver", "Low": "Bronze"}[previous] }} last time.{% endif %}</p>
+      <p class="result-next">Your next {{ quest.subject }} quest: <strong class="mode mode-{{ tier.mode | lower }}">{{ tier.mode }} mode</strong></p>
+    </div>
+    <dl class="result-stats">
+      <div><dt>Score</dt><dd class="tabular">{{ quest.score | round | int }}%</dd></div>
+      <div><dt>XP earned</dt><dd class="tabular">+{{ quest.xp }}</dd></div>
+      <div><dt>Hints</dt><dd class="tabular">{{ quest.hints_used }}</dd></div>
+      <div><dt>Time</dt><dd class="tabular">{{ '%d:%02d' % ((quest.duration_s | int) // 60, (quest.duration_s | int) % 60) }}</dd></div>
+    </dl>
+  </section>
+
+  {% if levelled_up or new_badges %}
+  <section class="card unlocks" aria-label="New unlocks">
+    {% if levelled_up %}<p class="unlock-level">🎉 <strong>Level up!</strong> You reached level {{ level.level }}.</p>{% endif %}
+    {% if new_badges %}
+    <ul class="badge-row">
+      {% for emoji, name, desc in new_badges %}
+      <li class="badge badge-new"><span class="badge-emoji" aria-hidden="true">{{ emoji }}</span><span class="badge-name">{{ name }}</span><span class="badge-desc">{{ desc }}</span></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  <div class="result-grid">
+    <section class="card" aria-labelledby="counts-title">
+      <h2 id="counts-title" class="card-title">What counts toward your tier</h2>
+      <ul class="breakdown">
+        {% for row in breakdown %}
+        <li>
+          <div class="breakdown-label"><span>{{ row.label }}</span><span class="tabular">{{ row.points }} / {{ row.max | int }}</span></div>
+          {{ bar(row.points, row.max, "bar-part") }}
+        </li>
+        {% endfor %}
+      </ul>
+      <div class="tier-track">
+        {% set s = [[pred.formula_score, 0] | max, 100] | min %}
+        <svg class="tier-svg" viewBox="0 0 100 16" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          <rect class="zone-low" x="0" y="4" width="50" height="8"/>
+          <rect class="zone-medium" x="50" y="4" width="15" height="8"/>
+          <rect class="zone-high" x="65" y="4" width="35" height="8"/>
+          <rect class="tier-marker" x="{{ ([s - 0.8, 0] | max) | round(1) }}" y="0" width="1.6" height="16"/>
+        </svg>
+        <div class="tier-track-labels" aria-hidden="true"><span>Bronze</span><span>Silver</span><span>Gold</span></div>
+        <p class="tabular total-line">Total: <strong>{{ pred.formula_score }}</strong> / 100 · Silver above 50, Gold above 65</p>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="path-title">
+      <h2 id="path-title" class="card-title">{% if path.target %}Your path to {{ {"High": "Gold", "Medium": "Silver"}[path.target] }}{% else %}Stay at the top{% endif %}</h2>
+      {% if path.steps %}
+      <p class="muted">Any one of these would be enough on its own:</p>
+      <ol class="path-steps">
+        {% for step in path.steps %}<li>{{ step }}</li>{% endfor %}
+      </ol>
+      {% elif path.target %}
+      <p>Keep playing every day and finishing your quests. Your score will climb!</p>
+      {% else %}
+      <p>You're a Gold Scholar. Keep your streak going and try helping a friend with a tricky question.</p>
+      {% endif %}
+      <p class="tip"><span aria-hidden="true">💡</span> {{ tip }}</p>
+      {% if practise %}
+      <p class="practise"><strong>Skills to practise:</strong> {% for s in practise %}<span class="skill-chip">{{ s }}</span>{% endfor %}</p>
+      {% endif %}
+    </section>
+
+    <section class="card ai-card" aria-labelledby="ai-title">
+      <h2 id="ai-title" class="card-title">What the AI noticed</h2>
+      <p>The AI is <strong>{{ [pred.confidence | round | int, 99] | min }}% sure</strong> this was a {{ {"High": "Gold", "Medium": "Silver", "Low": "Bronze"}[pred.label] }} quest.</p>
+      {% if borderline %}
+      <p class="notice notice-info">You're close to the line between two tiers, so the AI isn't completely sure. One more quest will make it clearer.</p>
+      {% endif %}
+      <ul class="pushes">
+        {% for p in pushes %}
+        <li class="{{ 'push-up' if p.push > 0 else 'push-down' }}">
+          <span aria-hidden="true">{{ '▲' if p.push > 0 else '▼' }}</span>
+          {{ p.label }} {{ 'helped' if p.push > 0 else 'held you back' }}
+        </li>
+        {% endfor %}
+      </ul>
+      <ul class="probabilities" aria-label="How likely each tier was">
+        {% for label, name in [("Low", "Bronze"), ("Medium", "Silver"), ("High", "Gold")] %}
+        <li><span>{{ name }}</span>{{ bar(probabilities[label] * 100, 100, "bar-prob bar-" ~ label | lower) }}<span class="tabular">{{ (probabilities[label] * 100) | round | int }}%</span></li>
+        {% endfor %}
+      </ul>
+      <p class="fine-print"><a href="{{ url_for('dashboard.about_ai') }}">How the AI decides</a></p>
+    </section>
+  </div>
+
+  <section class="card" aria-labelledby="review-title">
+    <h2 id="review-title" class="card-title">Your answers</h2>
+    <ol class="review">
+      {% for r in review %}
+      <li class="review-item {% if r.correct and r.tries == 1 %}review-right{% elif r.correct %}review-retry{% else %}review-miss{% endif %}">
+        <details>
+          <summary>
+            <span class="review-mark" aria-hidden="true">{% if r.correct and r.tries == 1 %}✔{% elif r.correct %}↻{% else %}✖{% endif %}</span>
+            <span class="review-prompt">{{ r.prompt }}</span>
+            <span class="visually-hidden">{% if r.correct and r.tries == 1 %}right first time{% elif r.correct %}right on second try{% else %}missed{% endif %}</span>
+          </summary>
+          <p>Answer: <strong>{{ r.options[r.answer] }}</strong>{% if r.choice is not none and r.choice != r.answer %} · You chose {{ r.options[r.choice] }}{% endif %}{% if r.hints %} · {{ r.hints }} hint{{ 's' if r.hints > 1 }}{% endif %}</p>
+          {% if r.explanation %}<p class="muted">{{ r.explanation }}</p>{% endif %}
+        </details>
+      </li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <div class="action-row">
+    <form method="post" action="{{ url_for('quests.start') }}">
+      {{ csrf() }}<input type="hidden" name="subject" value="{{ quest.subject }}">
+      <button class="btn btn-go" type="submit">Play another {{ quest.subject }} quest</button>
+    </form>
+    <a class="btn btn-ghost" href="{{ url_for('quests.home') }}">Choose a subject</a>
+    <a class="btn btn-ghost" href="{{ url_for('dashboard.dashboard') }}">My progress</a>
+  </div>
+</div>
+{% endblock %}

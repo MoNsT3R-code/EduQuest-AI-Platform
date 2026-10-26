@@ -1,0 +1,45 @@
+{% from "_macros.html" import csrf %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="EduQuest AI: short learning quests for grades 3 to 7 that adapt to each student.">
+  <title>{% block title %}EduQuest AI{% endblock %} · EduQuest AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="nav">
+    <a class="brand" href="{{ url_for('quests.home') if g.student else url_for('auth.login') }}">
+      <span class="brand-mark" aria-hidden="true">EQ</span><span class="brand-name">EduQuest <em>AI</em></span>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      {% if g.student %}
+      <a href="{{ url_for('quests.home') }}" {% if request.endpoint in ('quests.home', 'quests.play', 'quests.result') %}aria-current="page"{% endif %}>Quests</a>
+      <a href="{{ url_for('dashboard.dashboard') }}" {% if request.endpoint == 'dashboard.dashboard' %}aria-current="page"{% endif %}>My progress</a>
+      {% endif %}
+      <a href="{{ url_for('dashboard.about_ai') }}" {% if request.endpoint == 'dashboard.about_ai' %}aria-current="page"{% endif %}>How the AI works</a>
+    </nav>
+    {% if g.student %}
+    <div class="nav-user">
+      <span class="nav-name">{{ g.student.name }} <span class="nav-grade">Grade {{ g.student.grade }}</span></span>
+      <form method="post" action="{{ url_for('auth.logout') }}">{{ csrf() }}<button class="btn btn-small btn-ghost" type="submit">Sign out</button></form>
+    </div>
+    {% endif %}
+  </header>
+
+  <main id="main" tabindex="-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="ground">
+    <p>EduQuest AI · Learning quests for grades 3 to 7 · <a href="{{ url_for('dashboard.about_ai') }}">How the AI works and what we store</a></p>
+  </footer>
+</body>
+</html>
