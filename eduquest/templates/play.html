@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ quest.subject }} quest{% endblock %}
+{% block body_class %}page-play{% endblock %}
+{% block content %}
+<div class="container container-narrow">
+  <div class="play-bar">
+    <span class="play-subject"><span aria-hidden="true">{{ subject.emoji }}</span> {{ quest.subject }}</span>
+    <span class="mode mode-{{ quest.mode | lower }}">{{ quest.mode }}</span>
+    <ol class="pips" aria-label="Question {{ item.position }} of {{ total }}">
+      {% for i in range(1, total + 1) %}
+      <li class="pip {% if i < item.position %}pip-done{% elif i == item.position %}pip-now{% endif %}"><span class="visually-hidden">Question {{ i }}</span></li>
+      {% endfor %}
+    </ol>
+    {% if show_timer %}
+    <span class="timer tabular" data-timer data-start="{{ elapsed }}" aria-label="Time in this quest">⏱ <span data-timer-text>{{ '%d:%02d' % (elapsed // 60, elapsed % 60) }}</span></span>
+    {% endif %}
+  </div>
+
+  <section id="question" class="card question-card" aria-labelledby="prompt">
+    <div class="question-head">
+      <p class="question-meta">Question {{ item.position }} of {{ total }} · <span class="skill">{{ item.skill }}</span>
+        · <span class="difficulty d{{ item.difficulty }}" title="Difficulty">{{ ['Easy', 'Medium', 'Hard'][item.difficulty - 1] }}</span></p>
+      <button type="button" class="btn btn-small btn-ghost" data-read-aloud="#prompt" hidden>🔊 Read aloud</button>
+    </div>
+    <h1 id="prompt" class="prompt">{{ item.prompt }}</h1>
+
+    {% if item.hints_used >= 1 %}
+    <p class="hint-box" role="note"><strong>Hint:</strong> {{ item.hint }}</p>
+    {% endif %}
+
+    {% if not resolved %}
+      {% if item.tries == 1 %}
+      <p class="notice notice-retry" role="status">Not quite! You have one more try.</p>
+      {% endif %}
+      <form method="post" action="{{ url_for('quests.answer', qid=quest.id) }}" class="answers" data-answers>
+        {{ csrf() }}
+        {% for opt in options %}
+        {% set wrong_before = item.tries == 1 and item.last_choice == loop.index0 %}
+        {% set gone = loop.index0 in eliminated %}
+        <button type="submit" name="choice" value="{{ loop.index0 }}"
+                class="answer {% if wrong_before %}answer-wrong{% endif %} {% if gone %}answer-gone{% endif %}"
+                {% if wrong_before or gone %}disabled{% endif %}>
+          <span class="answer-key" aria-hidden="true">{{ loop.index }}</span>
+          <span class="answer-text">{{ opt }}</span>
+        </button>
+        {% endfor %}
+      </form>
+      <div class="question-tools">
+        {% if hints_left > 0 %}
+        <form method="post" action="{{ url_for('quests.hint', qid=quest.id) }}">
+          {{ csrf() }}
+          <button class="btn btn-small btn-gold" type="submit">
+            {% if item.hints_used == 0 %}💡 Get a hint{% else %}✂️ Use 50:50{% endif %}
+            <span class="hint-count">({{ hints_left }} left)</span>
+          </button>
+        </form>
+        {% endif %}
+        <p class="keyboard-tip">Tip: press 1–{{ options | length }} to answer</p>
+      </div>
+    {% else %}
+      <ul class="answers answers-done">
+        {% for opt in options %}
+        <li class="answer {% if loop.index0 == item.answer_index %}answer-right{% elif loop.index0 == item.last_choice %}answer-wrong{% endif %}">
+          <span class="answer-key" aria-hidden="true">{{ loop.index }}</span>
+          <span class="answer-text">{{ opt }}</span>
+          {% if loop.index0 == item.answer_index %}<span class="visually-hidden">(correct answer)</span>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      <div class="feedback {% if item.correct %}feedback-good{% else %}feedback-miss{% endif %}" role="status">
+        <p class="feedback-title">
+          {% if item.correct and item.tries == 1 %}⭐ Correct! +10 XP
+          {% elif item.correct %}👍 Got it on the second try! +5 XP
+          {% else %}Good try! The answer was “{{ options[item.answer_index] }}”.{% endif %}
+        </p>
+        {% if item.explanation %}<p>{{ item.explanation }}</p>{% endif %}
+      </div>
+      <form method="post" action="{{ url_for('quests.next_question', qid=quest.id) }}" class="next-form">
+        {{ csrf() }}
+        <button class="btn btn-go btn-block" type="submit" data-autofocus>
+          {% if item.position >= total %}See my results 🏁{% else %}Next question →{% endif %}
+        </button>
+      </form>
+    {% endif %}
+  </section>
+
+  <form method="post" action="{{ url_for('quests.quit_quest', qid=quest.id) }}" class="quit-form">
+    {{ csrf() }}
+    <button class="link-button" type="submit" data-confirm="Stop this quest? It will count as not finished.">Stop this quest</button>
+  </form>
+</div>
+{% endblock %}
