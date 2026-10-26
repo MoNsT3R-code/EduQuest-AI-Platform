@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduQuest AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="hero">
+        <div class="hero-badge">🎮 AI-Powered Learning</div>
+        <h1>EduQuest <span>AI</span></h1>
+        <p>Predict your performance level and earn rewards!</p>
+    </div>
+
+    <div class="container">
+
+        <div class="card form-card">
+            <div class="card-title">📋 Student Profile</div>
+            <form method="POST">
+                <div class="form-grid">
+
+                    <div class="input-group">
+                        <label>📝 Quiz Score (%)</label>
+                        <div class="slider-wrap">
+                            <input type="range" name="quiz_score" min="0" max="100" value="50"
+                                oninput="this.nextElementSibling.textContent = this.value + '%'">
+                            <span class="slider-val">50%</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>✅ Assignments Completed (%)</label>
+                        <div class="slider-wrap">
+                            <input type="range" name="assignments" min="0" max="100" value="50"
+                                oninput="this.nextElementSibling.textContent = this.value + '%'">
+                            <span class="slider-val">50%</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>⏱️ Study Time (hrs/week)</label>
+                        <div class="slider-wrap">
+                            <input type="range" name="time_spent" min="0" max="10" step="0.5" value="5"
+                                oninput="this.nextElementSibling.textContent = this.value + ' hrs'">
+                            <span class="slider-val">5 hrs</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>🔥 Streak Days</label>
+                        <div class="slider-wrap">
+                            <input type="range" name="streak_days" min="0" max="30" value="15"
+                                oninput="this.nextElementSibling.textContent = this.value + ' days'">
+                            <span class="slider-val">15 days</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>🔁 Quiz Attempts</label>
+                        <div class="slider-wrap">
+                            <input type="range" name="attempts" min="1" max="5" value="3"
+                                oninput="this.nextElementSibling.textContent = this.value">
+                            <span class="slider-val">3</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>💡 Hints Used</label>
+                        <div class="slider-wrap">
+                            <input type="range" name="hints_used" min="0" max="10" value="5"
+                                oninput="this.nextElementSibling.textContent = this.value">
+                            <span class="slider-val">5</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group full-width">
+                        <label>📚 Subject</label>
+                        <div class="select-wrap">
+                            <select name="subject">
+                                <option value="Mathematics">📐 Mathematics</option>
+                                <option value="English">📖 English</option>
+                                <option value="Computer Science">💻 Computer Science</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+
+                <button type="submit" class="predict-btn">⚡ Analyze My Performance!</button>
+            </form>
+        </div>
+
+        {% if result %}
+
+        <div class="card result-card {{ result.level }}">
+            <div class="result-top">
+                <div class="result-emoji">
+                    {% if result.level == 'high' %}🌟
+                    {% elif result.level == 'medium' %}⭐
+                    {% else %}✨{% endif %}
+                </div>
+                <div class="result-info">
+                    <div class="result-label">{{ result.label }} Performer</div>
+                    <div class="result-sub">📚 {{ result.subject }} · AI Confidence: {{ result.confidence }}%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-value">{{ result.points }}</div>
+                <div class="stat-label">XP Earned</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-value">{{ result.streak_days }}</div>
+                <div class="stat-label">Streak Days</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon">🤖</div>
+                <div class="stat-value">{{ result.confidence }}%</div>
+                <div class="stat-label">Confidence</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📈 XP Progress</div>
+            <div class="xp-bar-bg">
+                <div class="xp-bar-fill" style="width: {{ result.points }}%"></div>
+            </div>
+            <div class="xp-caption">{{ result.points }} / 100 XP</div>
+        </div>
+
+        <div class="card badge-card">
+            <div class="card-title">🎖️ Badge Earned</div>
+            <div class="badge-icon">
+                {% if result.level == 'high' %}🏆
+                {% elif result.level == 'medium' %}🥈
+                {% else %}🥉{% endif %}
+            </div>
+            <div class="badge-title">{{ result.badge }}</div>
+            <div class="badge-desc">{{ result.badge_desc }}</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">💡 AI Recommendation</div>
+            <div class="rec-box">{{ result.rec }}</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📊 Student Summary</div>
+            <div class="summary-grid">
+                <div class="summary-item">📝 Quiz Score <span>{{ result.quiz_score }}%</span></div>
+                <div class="summary-item">✅ Assignments <span>{{ result.assignments }}%</span></div>
+                <div class="summary-item">⏱️ Study Time <span>{{ result.time_spent }} hrs</span></div>
+                <div class="summary-item">🔥 Streak <span>{{ result.streak_days }} days</span></div>
+                <div class="summary-item">🔁 Attempts <span>{{ result.attempts }}</span></div>
+                <div class="summary-item">💡 Hints <span>{{ result.hints_used }}</span></div>
+                <div class="summary-item">📚 Subject <span>{{ result.subject }}</span></div>
+            </div>
+        </div>
+
+        <div class="back-btn-wrap">
+            <a href="/" class="back-btn">🔄 Predict Another Student</a>
+        </div>
+
+        {% endif %}
+
+    </div>
+
+    <footer>
+        <p>🎓 EduQuest AI · Student Performance Predictor · Grades 3–7</p>
+    </footer>
+
+</body>
+
+</html>
