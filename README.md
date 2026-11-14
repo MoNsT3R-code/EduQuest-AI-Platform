@@ -35,6 +35,16 @@ EduQuest AI addresses this problem by treating real-time student app interaction
 
 The system uses a dataset consisting of 200 student records engineered with realistic academic variance and locked under a replication seed (random_state=42) to model classroom behavior.
 
+The checked-in dataset is synthetic and contains no student names, contact details,
+addresses, dates of birth, school identifiers, or other direct identifiers. The
+`student_id` values are generated labels such as `S001`; the remaining columns are
+behavioral measurements and the derived performance label. Do not replace this
+file with real student data.
+
+Generated Python bytecode and trained model files are intentionally excluded from
+version control. The application trains the small demo model in memory from
+`student_data.csv` when it starts.
+
 ### Tracked Features
 1. **Quiz Scores (Qs):** Gauges short-term conceptual retention (0–100%).
 2. **Assignments Completed (Ac):** Tracks homework milestone progression.

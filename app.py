@@ -1,13 +1,36 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import numpy as np
-import joblib
+import csv
+from sklearn.ensemble import RandomForestClassifier
 from database import init_db, save_student, log_login, save_performance, get_student_history, get_student
 
 app = Flask(__name__)
 app.secret_key = "eduquest_secret_key"
 
-model = joblib.load("model.pkl")
-le = joblib.load("label_encoder.pkl")
+FEATURE_COLUMNS = (
+    "quiz_score",
+    "time_spent_hrs",
+    "attempts",
+    "hints_used",
+    "streak_days",
+    "assignments_completed",
+)
+
+
+def train_model():
+    features = []
+    labels = []
+    with open("student_data.csv", newline="", encoding="utf-8") as dataset:
+        for row in csv.DictReader(dataset):
+            features.append([float(row[column]) for column in FEATURE_COLUMNS])
+            labels.append(row["performance_label"])
+
+    classifier = RandomForestClassifier(n_estimators=100, random_state=42)
+    classifier.fit(features, labels)
+    return classifier
+
+
+model = train_model()
 
 init_db()
 
@@ -61,8 +84,7 @@ def quiz():
         input_data = np.array([[quiz_score, time_spent, attempts,
                                 hints_used, streak_days, assignments]])
 
-        prediction_encoded = model.predict(input_data)[0]
-        prediction_label = le.inverse_transform([prediction_encoded])[0]
+        prediction_label = model.predict(input_data)[0]
         confidence = round(max(model.predict_proba(input_data)[0]) * 100, 1)
 
         if prediction_label == "High":
