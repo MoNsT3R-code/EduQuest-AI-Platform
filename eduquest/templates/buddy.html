@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% from "_characters.html" import buddy_svg %}
+{% block title %}Choose your buddy{% endblock %}
+{% block content %}
+<div class="container">
+  <header class="page-head">
+    <p class="eyebrow-pixel">{% if first %}Step 2 of 2{% else %}Switch buddy{% endif %}</p>
+    <h1>Choose your quest buddy</h1>
+    <p class="lead">Your buddy battles beside you, cheers when you're right and helps when you're stuck. You can switch any time, and your gear comes too.</p>
+  </header>
+  <form method="post" class="buddy-pick">
+    {{ csrf() }}
+    {% for code, b in buddies.items() %}
+    <button type="submit" name="buddy" value="{{ code }}" class="card buddy-option {% if buddy and buddy.code == code and not first %}buddy-current{% endif %}">
+      {{ buddy_svg(code, buddy.gear if buddy and not first else {}, "idle", 1, cls="buddy-lg") }}
+      <span class="buddy-option-name">{{ b.name }}</span>
+      <span class="buddy-option-line">{{ b.line }}</span>
+      <span class="buddy-option-power">Power: {{ b.power }}</span>
+      <span class="btn btn-go btn-block" aria-hidden="true">{% if buddy and buddy.code == code and not first %}Your buddy ✓{% else %}Choose {{ b.name }}{% endif %}</span>
+    </button>
+    {% endfor %}
+  </form>
+</div>
+{% endblock %}

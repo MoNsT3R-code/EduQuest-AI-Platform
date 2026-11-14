@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% from "_macros.html" import bar %}
+{% block title %}How the AI works{% endblock %}
+{% block content %}
+<div class="container container-read">
+  <header class="page-head">
+    <p class="eyebrow-pixel">For parents and teachers</p>
+    <h1>How the AI works</h1>
+    <p class="lead">After every quest, a small model estimates how engaged a student is (Bronze, Silver or Gold) and the next quest adapts. Here is exactly what it uses, how well it works and what it can't do.</p>
+  </header>
+
+  <section class="card">
+    <h2 class="card-title">1. What the app measures</h2>
+    <p>Nothing is typed in by the student. The app records these six things while they play:</p>
+    <div class="table-wrap">
+      <table class="plain">
+        <thead><tr><th scope="col">Input</th><th scope="col">How it's measured</th></tr></thead>
+        <tbody>
+          <tr><td>Quiz score</td><td>Score in the quest just finished. Right first time counts fully, right on the second try counts half.</td></tr>
+          <tr><td>Learning time</td><td>Time spent answering in finished quests over the last 30 days (up to 10 hours). Idle time over 5 minutes on one question isn't counted.</td></tr>
+          <tr><td>Quests in this subject</td><td>Quests finished in this subject in the last 30 days (1 to 5).</td></tr>
+          <tr><td>Hints used</td><td>Hints taken in the quest just finished.</td></tr>
+          <tr><td>Day streak</td><td>Days in a row, up to today, with at least one finished quest (up to 30).</td></tr>
+          <tr><td>Quests finished</td><td>Share of quests started in the last 30 days that were finished.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title">2. How tiers are defined</h2>
+    <p>The training data labels each record with this weighted score:</p>
+    <p class="formula">S = {% for key, w, full, label in parts %}{{ (w * 100) | int }}% × {{ label | lower }}{{ ' + ' if not loop.last }}{% endfor %}</p>
+    <p>Streak counts toward its share over 30 days, and learning time over 10 hours. <strong>Silver</strong> means S is above {{ thresholds.Medium }} and <strong>Gold</strong> means above {{ thresholds.High }}. Every result page shows the student this breakdown, plus the smallest change that would move them up a tier.</p>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title">3. The model</h2>
+    <p>A <strong>{{ card.kind }}</strong> (version <code>{{ card.version }}</code>), trained on {{ card.training.records }} records in <code>student_data.csv</code>. It's stored as plain numbers in <code>models/engagement_model.json</code>, so loading it can never run code on the server.</p>
+    <h3>Accuracy (5-fold cross-validation)</h3>
+    <ul class="compare">
+      {% for row in card.comparison %}
+      <li class="{% if row.model == card.training.chosen %}compare-chosen{% endif %}">
+        <span class="compare-name">{{ row.model }}{% if row.model == card.training.chosen %} <em>(used)</em>{% endif %}</span>
+        {{ bar(row.cv_accuracy * 100, 100, "bar-compare") }}
+        <span class="tabular">{{ '%.1f' % (row.cv_accuracy * 100) }}% ± {{ '%.1f' % (row.cv_std * 100) }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    <p>On the notebook's own 80/20 split, it scores <strong>{{ '%.1f' % (card.holdout.accuracy * 100) }}%</strong>. The Random Forest scored 72.5% on the same split. Because the tiers come from a weighted sum, a linear model fits them far better than decision trees.</p>
+    <h3>What matters most to it</h3>
+    <ul class="compare">
+      {% for name, w in weights %}
+      <li><span class="compare-name">{{ name }}</span>{{ bar(w * 100, weights[0][1] * 100, "bar-weight") }}<span class="tabular">{{ (w * 100) | round | int }}%</span></li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title">4. How questions adapt</h2>
+    <p>Each student has a rating per subject that rises when they answer well and falls when they miss, a little like a chess rating. The next question is the difficulty they're likely to get right about
+      {{ (targets.Launchpad * 100) | int }}% of the time in Launchpad mode (Bronze), {{ (targets.Steady * 100) | int }}% in Steady mode (Silver) and {{ (targets.Challenge * 100) | int }}% in Challenge mode (Gold). Launchpad also hides the timer and adds a 50:50 hint.</p>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title">5. Limits, and what we store</h2>
+    <ul class="bullets">
+      <li><strong>The training data is synthetic.</strong> The 200 records were generated for a course project, so the model has never seen real classrooms. Treat a tier as a nudge for the next quest, never as a grade.</li>
+      <li><strong>Near a boundary it's unsure.</strong> When the model and the formula disagree, or it's under 60% confident, the student is told so.</li>
+      <li><strong>Grade isn't an input.</strong> Questions are pitched at the student's grade, but the tier is never based on it.</li>
+      <li><strong>Data kept:</strong> first name, grade, a hash of the picture password, quest answers and results. No IP addresses, emails or birthdays. Students can download or delete everything from <em>My progress</em>.</li>
+    </ul>
+  </section>
+</div>
+{% endblock %}

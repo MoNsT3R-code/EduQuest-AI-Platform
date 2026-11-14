@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Sign in{% endblock %}
+{% block body_class %}page-login{% endblock %}
+{% block content %}
+<div class="login-layout">
+  <section class="login-hero" aria-labelledby="hero-title">
+    <p class="eyebrow-pixel">Grades 3 to 7</p>
+    <h1 id="hero-title">Five questions.<br>One level up.</h1>
+    <p class="lead">Short quests in Math, English and Computer Science that get harder as you get better, and easier when you need a hand.</p>
+    <ul class="hero-points">
+      <li><span aria-hidden="true">🎯</span> Questions picked for your level</li>
+      <li><span aria-hidden="true">💡</span> Hints when you're stuck</li>
+      <li><span aria-hidden="true">🏆</span> XP, badges and a streak to keep</li>
+    </ul>
+    <div class="hero-scene" aria-hidden="true">
+      <span class="block q">?</span><span class="block">EQ</span><span class="block q">?</span>
+    </div>
+  </section>
+
+  <section class="card login-card" aria-labelledby="login-title">
+    <h2 id="login-title" class="card-title">Start your quest</h2>
+    {% if request.args.get('deleted') %}
+    <p class="notice notice-ok" role="status">Your account and everything saved about it has been deleted.</p>
+    {% endif %}
+    {% if error %}<p class="notice notice-error" role="alert">{{ error }}</p>{% endif %}
+
+    <form method="post" class="login-form" data-picture-form novalidate>
+      {{ csrf() }}
+      <fieldset class="mode-switch">
+        <legend class="visually-hidden">Have you played before?</legend>
+        <input type="radio" id="mode-return" name="mode" value="return" {% if mode != 'new' %}checked{% endif %}>
+        <label for="mode-return">I've played before</label>
+        <input type="radio" id="mode-new" name="mode" value="new" {% if mode == 'new' %}checked{% endif %}>
+        <label for="mode-new">I'm new here</label>
+      </fieldset>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="name">First name</label>
+          <input id="name" name="name" type="text" maxlength="30" autocomplete="off" autocapitalize="words"
+                 spellcheck="false" required value="{{ form.name or '' }}" placeholder="e.g. Ayesha">
+        </div>
+        <div class="field field-grade">
+          <label for="grade">Grade</label>
+          <select id="grade" name="grade" required>
+            <option value="" {% if not form.grade %}selected{% endif %} disabled>Pick</option>
+            {% for gr in range(3, 8) %}<option value="{{ gr }}" {% if form.grade == gr %}selected{% endif %}>Grade {{ gr }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="picture-password">
+        <p class="field-label" id="pics-label">Your secret pictures <span class="field-help">Pick 3, in order. <span data-new-only>Remember them!</span></span></p>
+        {% for slot in slots %}
+        <fieldset class="pic-row" data-slot="{{ slot }}">
+          <legend>{{ loop.index }}{{ ['st', 'nd', 'rd'][loop.index0] }} picture</legend>
+          {% for name, emoji in pictures %}
+          <input type="radio" id="pic-{{ slot }}-{{ name }}" name="pic_{{ slot }}" value="{{ name }}" class="visually-hidden">
+          <label for="pic-{{ slot }}-{{ name }}" class="pic" title="{{ name }}"><span aria-hidden="true">{{ emoji }}</span><span class="visually-hidden">{{ name }}</span></label>
+          {% endfor %}
+        </fieldset>
+        {% endfor %}
+      </div>
+
+      <button class="btn btn-go btn-block" type="submit" data-submit-label-new="Create my player" data-submit-label-return="Continue my quest">Let's go!</button>
+      <p class="fine-print">We only save your first name, grade and quiz results. A parent or teacher can download or delete them any time from <em>My progress</em>.</p>
+    </form>
+  </section>
+</div>
+{% endblock %}

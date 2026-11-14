@@ -1,0 +1,148 @@
+{
+  "version": "lr-20261026",
+  "kind": "multinomial logistic regression",
+  "features": [
+    "quiz_score",
+    "time_spent_hrs",
+    "attempts",
+    "hints_used",
+    "streak_days",
+    "assignments_completed"
+  ],
+  "classes": [
+    "High",
+    "Low",
+    "Medium"
+  ],
+  "scaler": {
+    "mean": [
+      57.39,
+      5.2545,
+      2.95,
+      5.145,
+      15.65,
+      53.385
+    ],
+    "scale": [
+      21.72643321,
+      2.75419312,
+      1.40978722,
+      3.17552752,
+      8.99374783,
+      25.25899394
+    ]
+  },
+  "coef": [
+    [
+      14.95415035,
+      5.21214116,
+      -0.24100323,
+      -0.16914751,
+      10.40387909,
+      12.61591551
+    ],
+    [
+      -14.94082381,
+      -4.71536894,
+      0.46852727,
+      -0.07998805,
+      -10.29164189,
+      -12.81280896
+    ],
+    [
+      -0.01332655,
+      -0.49677222,
+      -0.22752404,
+      0.24913556,
+      -0.1122372,
+      0.19689346
+    ]
+  ],
+  "intercept": [
+    -8.96632776,
+    0.40417361,
+    8.56215415
+  ],
+  "training": {
+    "records": 200,
+    "label_counts": {
+      "Medium": 76,
+      "Low": 74,
+      "High": 50
+    },
+    "trained_at": "2026-10-26T05:45:58+00:00",
+    "sklearn": "1.9.1",
+    "chosen": "Logistic Regression (C=100)"
+  },
+  "comparison": [
+    {
+      "model": "Random Forest (notebook)",
+      "cv_accuracy": 0.785,
+      "cv_std": 0.08
+    },
+    {
+      "model": "Gradient Boosting",
+      "cv_accuracy": 0.805,
+      "cv_std": 0.06
+    },
+    {
+      "model": "Logistic Regression (C=1)",
+      "cv_accuracy": 0.925,
+      "cv_std": 0.0791
+    },
+    {
+      "model": "Logistic Regression (C=10)",
+      "cv_accuracy": 0.945,
+      "cv_std": 0.0485
+    },
+    {
+      "model": "Logistic Regression (C=100)",
+      "cv_accuracy": 0.95,
+      "cv_std": 0.0418
+    }
+  ],
+  "holdout": {
+    "accuracy": 0.9,
+    "per_class": {
+      "High": {
+        "precision": 1.0,
+        "recall": 0.9,
+        "f1-score": 0.947
+      },
+      "Low": {
+        "precision": 0.875,
+        "recall": 0.933,
+        "f1-score": 0.903
+      },
+      "Medium": {
+        "precision": 0.867,
+        "recall": 0.867,
+        "f1-score": 0.867
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "High",
+        "Low",
+        "Medium"
+      ],
+      "rows": [
+        [
+          9,
+          0,
+          1
+        ],
+        [
+          0,
+          14,
+          1
+        ],
+        [
+          0,
+          2,
+          13
+        ]
+      ]
+    }
+  }
+}
