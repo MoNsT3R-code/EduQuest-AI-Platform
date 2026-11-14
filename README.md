@@ -149,3 +149,10 @@ python eduquest_engine.py
 ``` Bash
 streamlit run app.py
    
+# Data handling
+
+The notebook generates `student_data.csv` locally for demonstrations. The
+repository does not retain generated datasets or trained model artifacts;
+never replace the local sample data with real student records, identifiers, or
+institutional data.
+
